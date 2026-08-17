@@ -1,0 +1,715 @@
+openapi: 3.1.0
+info:
+  title: Wedding Games API (contrat provisoire)
+  version: 0.1.0-draft
+  description: >
+    Contrat OpenAPI provisoire, écrit côté frontend en l'absence du contrat
+    officiel exposé par le backend Spring Boot (dépôt games-app-back, vide au
+    moment de la rédaction). Il couvre uniquement le périmètre de la phase 1 :
+    navigation, identification par QR/code, salon, administration, pilotage
+    intervenant, jury et écran de projection. À REMPLACER par le contrat
+    généré par le backend dès qu'il sera disponible (voir README, section
+    "Génération du client OpenAPI").
+servers:
+  - url: /api
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: WEDDING_SESSION
+
+  schemas:
+    Role:
+      type: string
+      enum: [ADMIN, INTERVENANT, JURY, PARTICIPANT, SCREEN]
+
+    ProblemDetail:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        code:
+          type: string
+          description: Code d'erreur métier stable (ex. INVITATION_REVOKED)
+
+    EventTheme:
+      type: object
+      required: [eventTitle, spouseNames, eventDate, colors]
+      properties:
+        eventTitle:
+          type: string
+        spouseNames:
+          type: array
+          items:
+            type: string
+          minItems: 2
+          maxItems: 2
+        eventDate:
+          type: string
+          format: date
+        logoUrl:
+          type: string
+          nullable: true
+        welcomeText:
+          type: string
+          nullable: true
+        colors:
+          type: object
+          required: [primary, secondary, background, accent]
+          properties:
+            primary:
+              type: string
+            secondary:
+              type: string
+            background:
+              type: string
+            accent:
+              type: string
+
+    InvitationPreview:
+      type: object
+      required: [firstName, lastName, status]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        status:
+          type: string
+          enum: [VALID, REVOKED, ALREADY_USED, EXPIRED]
+
+    Session:
+      type: object
+      required: [participantId, firstName, lastName, role, points, victories]
+      properties:
+        participantId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        points:
+          type: integer
+        victories:
+          type: integer
+
+    LobbyState:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [CLOSED, OPEN, LOCKED]
+        connectedCount:
+          type: integer
+          nullable: true
+        message:
+          type: string
+          nullable: true
+
+    ScreenState:
+      type: object
+      required: [theme, lobby]
+      properties:
+        theme:
+          $ref: '#/components/schemas/EventTheme'
+        lobby:
+          $ref: '#/components/schemas/LobbyState'
+
+    Participant:
+      type: object
+      required: [id, firstName, lastName, active, role, invitationStatus]
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        active:
+          type: boolean
+        role:
+          $ref: '#/components/schemas/Role'
+        invitationStatus:
+          type: string
+          enum: [NOT_GENERATED, VALID, REVOKED, ALREADY_USED, EXPIRED]
+
+    ParticipantInput:
+      type: object
+      required: [firstName, lastName]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+
+    Invitation:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [NOT_GENERATED, VALID, REVOKED, ALREADY_USED, EXPIRED]
+        qrAvailable:
+          type: boolean
+
+    Exclusion:
+      type: object
+      required: [id, participantAId, participantBId, type]
+      properties:
+        id:
+          type: string
+        participantAId:
+          type: string
+        participantBId:
+          type: string
+        type:
+          type: string
+          enum: [ABSOLUTE, PREFERENCE]
+        reason:
+          type: string
+          nullable: true
+
+    ExclusionInput:
+      type: object
+      required: [participantAId, participantBId, type]
+      properties:
+        participantAId:
+          type: string
+        participantBId:
+          type: string
+        type:
+          type: string
+          enum: [ABSOLUTE, PREFERENCE]
+        reason:
+          type: string
+          nullable: true
+
+    Arrival:
+      type: object
+      required: [participantId, firstName, lastName, arrivedAt, late]
+      properties:
+        participantId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        arrivedAt:
+          type: string
+          format: date-time
+        late:
+          type: boolean
+
+paths:
+  /theme:
+    get:
+      operationId: getTheme
+      summary: Configuration visuelle et textuelle de l'événement
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventTheme'
+
+  /invitations/resolve:
+    post:
+      operationId: resolveInvitation
+      summary: Résout un jeton d'invitation (issu du QR personnel)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Invitation résolue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationPreview'
+        '404':
+          description: Jeton inconnu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '410':
+          description: Jeton révoqué, expiré ou déjà utilisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /invitations/confirm:
+    post:
+      operationId: confirmInvitation
+      summary: >
+        Confirme l'identité et crée la session participant, à partir du
+        jeton QR ou du code de secours préalablement résolu.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Session créée (cookie posé par le backend)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '410':
+          description: Jeton devenu invalide entre la résolution et la confirmation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /invitations/fallback:
+    post:
+      operationId: resolveFallbackCode
+      summary: Résout un code d'invitation de secours saisi manuellement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Invitation résolue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationPreview'
+        '404':
+          description: Code inconnu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /session:
+    get:
+      operationId: getSession
+      summary: Session active (restauration après rechargement)
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: Session active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '401':
+          description: Aucune session active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+    delete:
+      operationId: closeSession
+      summary: Ferme la session courante
+      security: [{ cookieAuth: [] }]
+      responses:
+        '204':
+          description: Session fermée
+
+  /lobby:
+    get:
+      operationId: getLobby
+      summary: État du salon (participant)
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobbyState'
+
+  /screen/state:
+    get:
+      operationId: getScreenState
+      summary: État public destiné à l'écran de projection
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScreenState'
+
+  /admin/participants:
+    get:
+      operationId: listParticipants
+      summary: Liste et recherche des participants
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
+    post:
+      operationId: createParticipant
+      summary: Ajoute un participant
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantInput'
+      responses:
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participant'
+
+  /admin/participants/{id}:
+    patch:
+      operationId: updateParticipant
+      summary: Modifie un participant
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantInput'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participant'
+
+  /admin/participants/{id}/disable:
+    post:
+      operationId: disableParticipant
+      summary: Désactive un participant
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participant'
+
+  /admin/participants/{id}/invitation:
+    get:
+      operationId: getParticipantInvitation
+      summary: Statut de l'invitation d'un participant
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+
+  /admin/participants/{id}/invitation/generate:
+    post:
+      operationId: generateParticipantInvitation
+      summary: Génère l'invitation d'un participant
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+
+  /admin/participants/{id}/invitation/regenerate:
+    post:
+      operationId: regenerateParticipantInvitation
+      summary: Régénère l'invitation d'un participant (invalide l'ancien jeton)
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+
+  /admin/participants/{id}/invitation/qr:
+    get:
+      operationId: getParticipantInvitationQr
+      summary: Image QR de l'invitation (si disponible)
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Image PNG du QR
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: QR non disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /admin/exclusions:
+    get:
+      operationId: listExclusions
+      summary: Liste des exclusions
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Exclusion'
+    post:
+      operationId: createExclusion
+      summary: Crée une exclusion
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExclusionInput'
+      responses:
+        '201':
+          description: Créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exclusion'
+
+  /admin/exclusions/{id}:
+    delete:
+      operationId: deleteExclusion
+      summary: Supprime une exclusion (les exclusions absolues sont protégées côté backend)
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Supprimée
+        '403':
+          description: Suppression interdite (exclusion absolue)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /admin/roles:
+    get:
+      operationId: listRoles
+      summary: Rôles existants et leur attribution
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [participantId, firstName, lastName, role]
+                  properties:
+                    participantId:
+                      type: string
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    role:
+                      $ref: '#/components/schemas/Role'
+
+  /admin/lobby:
+    get:
+      operationId: getAdminLobby
+      summary: État détaillé du salon (vue administrateur)
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobbyState'
+
+  /intervenant/lobby:
+    get:
+      operationId: getIntervenantLobby
+      summary: État du salon (vue intervenant)
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobbyState'
+
+  /intervenant/lobby/open:
+    post:
+      operationId: openLobby
+      summary: Ouvre le salon
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobbyState'
+
+  /intervenant/lobby/close:
+    post:
+      operationId: closeLobby
+      summary: Ferme le salon
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobbyState'
+
+  /intervenant/lobby/lock:
+    post:
+      operationId: lockLobby
+      summary: Verrouille le salon
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobbyState'
+
+  /intervenant/arrivals/recent:
+    get:
+      operationId: listRecentArrivals
+      summary: Dernières arrivées
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Arrival'
+
+  /intervenant/arrivals/late:
+    get:
+      operationId: listLateArrivals
+      summary: Invités arrivés en retard (non encore enregistrés)
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [firstName, lastName]
+                  properties:
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string

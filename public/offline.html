@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hors connexion</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background-color: #faf8f5;
+        color: #201d29;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100dvh;
+        margin: 0;
+        padding: 24px;
+        text-align: center;
+      }
+      .card {
+        max-width: 420px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      button {
+        margin-top: 16px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        border: none;
+        background-color: #7c5cff;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Vous êtes hors connexion</h1>
+      <p>
+        Cette page n'a pas pu être chargée car votre appareil n'est pas connecté à internet.
+        Vérifiez votre connexion puis réessayez.
+      </p>
+      <button type="button" onclick="window.location.reload()">Réessayer</button>
+    </div>
+  </body>
+</html>
