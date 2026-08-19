@@ -2,9 +2,9 @@
 
 import { useParams } from "next/navigation";
 import { ErrorPanel } from "../../../components/ErrorPanel";
-import { JoinTokenContent } from "./JoinTokenContent";
+import { InviteTokenContent } from "./InviteTokenContent";
 
-export default function JoinTokenPage() {
+export default function InviteTokenPage() {
   const params = useParams<{ token: string }>();
   const token = Array.isArray(params.token) ? params.token[0] : params.token;
 
@@ -16,5 +16,5 @@ export default function JoinTokenPage() {
     );
   }
 
-  return <JoinTokenContent token={token} />;
+  return <InviteTokenContent token={token} />;
 }

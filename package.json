@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev --webpack -p 5174",
     "build": "next build --webpack",
-    "start": "next start",
+    "start": "next start -p 5174",
     "lint": "eslint",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.worker.json --noEmit",
     "test": "vitest run",

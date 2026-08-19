@@ -1,16 +1,25 @@
 :root {
   color-scheme: light;
 
+  /* Identité Weddup fixe, jamais remplacée par /api/theme (voir .home) */
+  --weddup-primary: #2457ff;
+  --weddup-navy: #102a56;
+  --weddup-text: #2f4570;
+  --weddup-muted: #4a5d80;
+  --weddup-accent: #ffd84d;
+  --weddup-surface-alt: #eef3ff;
+  --weddup-background: #fafbff;
+
   /* Palette par défaut, remplacée à l'exécution par /api/theme */
-  --color-primary: #7c5cff;
-  --color-secondary: #2f2b3a;
-  --color-background: #faf8f5;
-  --color-accent: #ff8a65;
+  --color-primary: var(--weddup-primary);
+  --color-secondary: var(--weddup-navy);
+  --color-background: var(--weddup-background);
+  --color-accent: var(--weddup-accent);
 
   --color-surface: #ffffff;
-  --color-text: #201d29;
-  --color-text-muted: #625d70;
-  --color-border: #e3ddec;
+  --color-text: var(--weddup-text);
+  --color-text-muted: var(--weddup-muted);
+  --color-border: #dde5fa;
   --color-danger: #c62828;
   --color-success: #2e7d32;
   --color-warning: #b26a00;
@@ -18,6 +27,7 @@
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 20px;
+  --radius-pill: 999px;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -27,10 +37,12 @@
   --space-6: 32px;
   --space-7: 48px;
 
-  --font-sans: "Fraunces", "Iowan Old Style", ui-serif, Georgia, serif;
-  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-space-grotesk), "Segoe UI", sans-serif;
+  --font-ui: var(--font-space-grotesk), "Segoe UI", sans-serif;
+  --font-mono: var(--font-space-mono), "SFMono-Regular", Consolas, monospace;
 
   --shadow-card: 0 8px 30px -12px rgb(32 29 41 / 0.25);
+  --shadow-btn: 0 8px 20px rgb(36 87 255 / 0.28);
 
   font-family: var(--font-ui);
   color: var(--color-text);
@@ -60,6 +72,8 @@ h1,
 h2,
 h3 {
   font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1.15;
   margin: 0 0 var(--space-3);
 }

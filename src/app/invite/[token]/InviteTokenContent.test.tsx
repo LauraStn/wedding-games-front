@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../../test/test-utils";
-import { JoinTokenContent } from "./JoinTokenContent";
+import { InviteTokenContent } from "./InviteTokenContent";
 import { ApiError } from "../../../api/errors";
 import * as authApi from "../../../features/auth/api";
 
@@ -12,11 +12,11 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: replaceMock, push: vi.fn() }),
 }));
 
-function renderJoinPage(token: string) {
-  return renderWithProviders(<JoinTokenContent token={token} />);
+function renderInvitePage(token: string) {
+  return renderWithProviders(<InviteTokenContent token={token} />);
 }
 
-describe("JoinTokenContent", () => {
+describe("InviteTokenContent", () => {
   beforeEach(() => {
     replaceMock.mockClear();
   });
@@ -28,7 +28,7 @@ describe("JoinTokenContent", () => {
       status: "VALID",
     });
 
-    renderJoinPage("valid-token");
+    renderInvitePage("valid-token");
 
     await waitFor(() => {
       expect(screen.getByText(/Sandrine/)).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe("JoinTokenContent", () => {
       new ApiError("not-found", "Cette invitation est introuvable."),
     );
 
-    renderJoinPage("unknown-token");
+    renderInvitePage("unknown-token");
 
     await waitFor(() => {
       expect(screen.getByText("Cette invitation est introuvable.")).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe("JoinTokenContent", () => {
       victories: 0,
     });
 
-    renderJoinPage("valid-token");
+    renderInvitePage("valid-token");
 
     const confirmButton = await screen.findByRole("button", { name: /c.est bien moi/i });
     await user.click(confirmButton);

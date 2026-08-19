@@ -7,17 +7,18 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const theme = await fetchTheme().catch(() => null);
 
   return {
-    name: theme?.eventTitle ?? "Jeux de mariage",
-    short_name: (theme?.eventTitle ?? "Mariage").slice(0, 30),
-    description: "Application privée d'animations de mariage",
+    name: theme?.eventTitle ?? "Weddup",
+    short_name: (theme?.eventTitle ?? "Weddup").slice(0, 30),
+    description: "Weddup — l'application de jeux pour animer votre mariage",
     start_url: "/",
     display: "standalone",
-    background_color: theme?.colors.background ?? "#faf8f5",
-    theme_color: theme?.colors.primary ?? "#7c5cff",
+    background_color: theme?.colors.background ?? "#fafbff",
+    theme_color: theme?.colors.primary ?? "#2457ff",
     lang: "fr",
     icons: [
-      { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-      { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

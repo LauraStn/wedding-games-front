@@ -11,7 +11,7 @@ info:
     généré par le backend dès qu'il sera disponible (voir README, section
     "Génération du client OpenAPI").
 servers:
-  - url: /api
+  - url: /api/v1
 
 components:
   securitySchemes:

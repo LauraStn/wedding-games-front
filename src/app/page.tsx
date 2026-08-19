@@ -4,12 +4,13 @@ import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEventTheme } from "../features/theme/ThemeProvider";
 import { useSession } from "../features/auth/useSession";
 import { useConfirmInvitation, useResolveFallbackCode } from "../features/auth/mutations";
 import { ErrorPanel } from "../components/ErrorPanel";
+import { WeddupMark } from "../components/WeddupMark";
 import type { InvitationPreview } from "../features/auth/types";
 
 const fallbackSchema = z.object({
@@ -56,9 +57,9 @@ function SessionExpiredNotice() {
 }
 
 export default function HomePage() {
-  const { theme, isLoading: themeLoading } = useEventTheme();
   const { session } = useSession();
   const router = useRouter();
+  const [step, setStep] = useState<"idle" | "code">("idle");
   const [preview, setPreview] = useState<InvitationPreview | null>(null);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
 
@@ -93,91 +94,138 @@ export default function HomePage() {
     confirm.reset();
   };
 
+  const onBackToHome = () => {
+    onRestart();
+    setStep("idle");
+  };
+
   const blockingStatusMessage = preview ? invitationStatusMessage(preview.status) : null;
 
   return (
-    <div className="page page--centered">
-      <div className="card home-card">
-        {theme?.logoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element -- logo distant fourni par le backend
-          <img src={theme.logoUrl} alt="" className="home-card__logo" />
-        )}
-        <h1>{themeLoading ? "Chargement…" : theme?.eventTitle}</h1>
-        {theme && (
-          <p className="home-card__subtitle">
-            {theme.spouseNames.join(" & ")} — {new Date(theme.eventDate).toLocaleDateString("fr-FR")}
-          </p>
-        )}
-        {theme?.welcomeText && <p>{theme.welcomeText}</p>}
+    <div className="home">
+      <div className="home__visual" aria-hidden="true">
+        <span className="home__blob" />
+        <div className="home__mark-wrap">
+          <span className="home__mark-backdrop" />
+          <span className="home__mark-dot" />
+          <div className="home__mark">
+            <WeddupMark className="home__mark-svg" />
+          </div>
+        </div>
+      </div>
 
-        {session && (
-          <p className="home-card__resume">
-            Vous êtes déjà identifié·e. <Link href={ROLE_HOME[session.role] ?? "/"}>Continuer</Link>
-          </p>
-        )}
+      <div className="home__panel">
+        <div className="home__inner">
+          <Image
+            src="/logo.png"
+            alt="Weddup"
+            width={1942}
+            height={809}
+            className="home__logotype"
+            priority
+          />
 
-        <Suspense fallback={null}>
-          <SessionExpiredNotice />
-        </Suspense>
+          <Suspense fallback={null}>
+            <SessionExpiredNotice />
+          </Suspense>
 
-        <section aria-labelledby="fallback-heading">
-          <h2 id="fallback-heading">Pas de QR sous la main ?</h2>
-          <p>Saisissez votre code d&apos;invitation de secours.</p>
-
-          {!preview && (
-            <form onSubmit={onSubmitCode} noValidate className="form">
-              <label htmlFor="code">Code d&apos;invitation</label>
-              <input
-                id="code"
-                type="text"
-                autoComplete="off"
-                inputMode="text"
-                aria-invalid={errors.code ? "true" : "false"}
-                aria-describedby={errors.code ? "code-error" : undefined}
-                {...register("code")}
-              />
-              {errors.code && (
-                <p id="code-error" className="field-error" role="alert">
-                  {errors.code.message}
-                </p>
-              )}
-              <button type="submit" className="btn btn--primary" disabled={resolveFallback.isPending}>
-                {resolveFallback.isPending ? "Vérification…" : "Valider le code"}
-              </button>
-            </form>
-          )}
-
-          {resolveFallback.isError && (
-            <ErrorPanel error={resolveFallback.error} title="Code invalide" />
-          )}
-
-          {preview && !blockingStatusMessage && (
-            <div className="identity-confirm">
-              <p>
-                Bienvenue <strong>{preview.firstName} {preview.lastName}</strong>. Confirmez-vous
-                votre identité ?
+          {step === "idle" && (
+            <>
+              <h1 className="home__title">
+                Mariés, prêts,
+                <br />
+                <span className="home__highlight">jouez&nbsp;!</span>
+              </h1>
+              <p className="home__subtitle">
+                Vous avez reçu une invitation&nbsp;? Rejoignez les jeux de la soirée, découvrez
+                votre binôme et laissez-vous guider.
               </p>
-              <div className="identity-confirm__actions">
-                <button type="button" className="btn btn--primary" onClick={onConfirm} disabled={confirm.isPending}>
-                  {confirm.isPending ? "Confirmation…" : "C’est bien moi"}
+
+              {session ? (
+                <Link href={ROLE_HOME[session.role] ?? "/"} className="btn btn--primary home__cta">
+                  Continuer <span aria-hidden="true">→</span>
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn--primary home__cta"
+                  onClick={() => setStep("code")}
+                >
+                  Commencer <span aria-hidden="true">→</span>
                 </button>
-                <button type="button" className="btn btn--secondary" onClick={onRestart}>
-                  Ce n&apos;est pas moi
-                </button>
-              </div>
-              {confirm.isError && <ErrorPanel error={confirm.error} title="Confirmation impossible" />}
-            </div>
+              )}
+              <p className="home__mention">Aucun compte nécessaire</p>
+            </>
           )}
 
-          {preview && blockingStatusMessage && (
-            <div className="error-panel" role="alert">
-              <p className="error-panel__message">{blockingStatusMessage}</p>
-              <button type="button" className="btn btn--secondary" onClick={onRestart}>
-                Réessayer avec un autre code
+          {step === "code" && (
+            <section className="home__form-section" aria-labelledby="fallback-heading">
+              <button type="button" className="link-button home__back" onClick={onBackToHome}>
+                ← Retour
               </button>
-            </div>
+              <h2 id="fallback-heading">Pas de QR sous la main ?</h2>
+              <p>Saisissez votre code d&apos;invitation de secours.</p>
+
+              {!preview && (
+                <form onSubmit={onSubmitCode} noValidate className="form">
+                  <label htmlFor="code">Code d&apos;invitation</label>
+                  <input
+                    id="code"
+                    type="text"
+                    autoComplete="off"
+                    inputMode="text"
+                    aria-invalid={errors.code ? "true" : "false"}
+                    aria-describedby={errors.code ? "code-error" : undefined}
+                    {...register("code")}
+                  />
+                  {errors.code && (
+                    <p id="code-error" className="field-error" role="alert">
+                      {errors.code.message}
+                    </p>
+                  )}
+                  <button type="submit" className="btn btn--primary" disabled={resolveFallback.isPending}>
+                    {resolveFallback.isPending ? "Vérification…" : "Valider le code"}
+                  </button>
+                </form>
+              )}
+
+              {resolveFallback.isError && (
+                <ErrorPanel error={resolveFallback.error} title="Code invalide" />
+              )}
+
+              {preview && !blockingStatusMessage && (
+                <div className="identity-confirm">
+                  <p>
+                    Bienvenue <strong>{preview.firstName} {preview.lastName}</strong>. Confirmez-vous
+                    votre identité ?
+                  </p>
+                  <div className="identity-confirm__actions">
+                    <button type="button" className="btn btn--primary" onClick={onConfirm} disabled={confirm.isPending}>
+                      {confirm.isPending ? "Confirmation…" : "C’est bien moi"}
+                    </button>
+                    <button type="button" className="btn btn--secondary" onClick={onRestart}>
+                      Ce n&apos;est pas moi
+                    </button>
+                  </div>
+                  {confirm.isError && <ErrorPanel error={confirm.error} title="Confirmation impossible" />}
+                </div>
+              )}
+
+              {preview && blockingStatusMessage && (
+                <div className="error-panel" role="alert">
+                  <p className="error-panel__message">{blockingStatusMessage}</p>
+                  <button type="button" className="btn btn--secondary" onClick={onRestart}>
+                    Réessayer avec un autre code
+                  </button>
+                </div>
+              )}
+            </section>
           )}
-        </section>
+
+          <Link href="/admin" className="home__admin-link">
+            Administration
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -10,6 +10,6 @@ if (!baseUrl) {
 }
 
 export const apiClient = createClient<paths>({
-  baseUrl: `${baseUrl}/api`,
+  baseUrl: `${baseUrl}/api/v1`,
   credentials: "include",
 });

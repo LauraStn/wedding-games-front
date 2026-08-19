@@ -25,19 +25,6 @@
   width: 100%;
 }
 
-.home-card {
-  max-width: 480px;
-}
-
-.home-card__logo {
-  max-width: 120px;
-  margin: 0 auto var(--space-4);
-}
-
-.home-card__subtitle {
-  color: var(--color-text-muted);
-}
-
 /* Boutons ---------------------------------------------------------------- */
 
 .btn {
@@ -46,7 +33,8 @@
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-md);
+  min-height: 58px;
+  border-radius: var(--radius-pill);
   border: 2px solid transparent;
   font-weight: 600;
   cursor: pointer;
@@ -62,6 +50,7 @@
 .btn--primary {
   background-color: var(--color-primary);
   color: white;
+  box-shadow: var(--shadow-btn);
 }
 
 .btn--primary:not(:disabled):hover {
@@ -494,4 +483,257 @@
   font-size: clamp(1rem, 2vw, 1.5rem);
   color: var(--color-text-muted);
   max-width: 40ch;
+}
+
+/* Accueil (base de l'app, hors thématisation par mariage) ---------------- */
+
+.home {
+  /* Identité Weddup figée : indépendante des couleurs de thème appliquées
+     sur :root par ThemeProvider (voir features/theme/ThemeProvider.tsx). */
+  --color-primary: var(--weddup-primary);
+  --color-secondary: var(--weddup-navy);
+  --color-background: var(--weddup-background);
+  --color-accent: var(--weddup-accent);
+  --color-text: var(--weddup-text);
+  --color-text-muted: var(--weddup-muted);
+
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background);
+}
+
+.home__visual {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5) var(--space-4);
+  background-color: transparent;
+  overflow: hidden;
+}
+
+.home__blob {
+  display: none;
+  position: absolute;
+  top: -12%;
+  left: -10%;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+}
+
+.home__mark-wrap {
+  position: relative;
+  width: min(200px, 45vw);
+  aspect-ratio: 1;
+}
+
+.home__mark-backdrop {
+  display: block;
+  position: absolute;
+  inset: -8% 10% 10% -8%;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-primary);
+  transform: rotate(10deg);
+}
+
+.home__mark-dot {
+  display: block;
+  position: absolute;
+  top: -10%;
+  right: -12%;
+  width: 34%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  z-index: 1;
+}
+
+.home__mark {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
+  transform: rotate(-7deg);
+}
+
+.home__mark-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(7deg);
+}
+
+.home__panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+  text-align: center;
+}
+
+.home__inner {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home__logotype {
+  height: 32px;
+  width: auto;
+  margin: 0 0 var(--space-5);
+}
+
+.home__title {
+  font-size: 35px;
+  color: var(--color-secondary);
+}
+
+.home__highlight {
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 0.25em;
+  text-underline-offset: -0.02em;
+}
+
+.home__subtitle {
+  font-size: 15px;
+  color: var(--color-text);
+  max-width: 42ch;
+}
+
+.home__cta {
+  width: 100%;
+  margin-top: var(--space-2);
+  font-size: 1.05rem;
+}
+
+.home__mention {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: var(--space-2) 0 var(--space-5);
+}
+
+.home__admin-link {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.home__back {
+  align-self: flex-start;
+  margin-bottom: var(--space-3);
+}
+
+.home__form-section {
+  width: 100%;
+  text-align: left;
+}
+
+@media (max-width: 599px) {
+  .home__visual {
+    padding: var(--space-4);
+  }
+
+  .home__mark-wrap {
+    width: min(160px, 42vw);
+  }
+
+  .home__mark {
+    padding: var(--space-3);
+  }
+
+  .home__panel {
+    padding: var(--space-5) var(--space-4) var(--space-6);
+  }
+
+  .home__logotype {
+    margin-bottom: var(--space-3);
+  }
+
+  .home__title {
+    margin-bottom: var(--space-2);
+  }
+
+  .home__subtitle {
+    margin-bottom: var(--space-3);
+  }
+
+  .home__mention {
+    margin: var(--space-1) 0 var(--space-3);
+  }
+}
+
+@media (min-width: 600px) {
+  .home__title {
+    font-size: 52px;
+  }
+
+  .home__subtitle {
+    font-size: 17px;
+  }
+
+  .home__visual {
+    background-color: var(--color-primary);
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .home__blob {
+    display: block;
+  }
+
+  .home__mark-backdrop,
+  .home__mark-dot {
+    display: none;
+  }
+}
+
+@media (min-width: 960px) {
+  .home {
+    flex-direction: row;
+  }
+
+  .home__visual {
+    flex: 0 0 42%;
+    padding: var(--space-7);
+  }
+
+  .home__mark-wrap {
+    width: min(320px, 60%);
+  }
+
+  .home__panel {
+    justify-content: flex-start;
+    text-align: left;
+    padding: var(--space-7);
+  }
+
+  .home__inner {
+    align-items: flex-start;
+    max-width: 520px;
+  }
+
+  .home__title {
+    font-size: 68px;
+  }
+
+  .home__subtitle {
+    font-size: 19px;
+  }
+
+  .home__cta {
+    width: auto;
+  }
 }

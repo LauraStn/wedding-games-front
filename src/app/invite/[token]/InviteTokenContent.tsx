@@ -21,7 +21,7 @@ function statusMessage(status: InvitationPreview["status"]): string | null {
   }
 }
 
-export function JoinTokenContent({ token }: { token: string }) {
+export function InviteTokenContent({ token }: { token: string }) {
   const router = useRouter();
   const confirm = useConfirmInvitation();
 
