@@ -4,7 +4,6 @@ import { Space_Grotesk, Space_Mono } from "next/font/google";
 import "../styles/global.css";
 import "../styles/components.css";
 import { Providers } from "./providers";
-import { ConnectionBanner } from "../components/ConnectionBanner";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -35,7 +34,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <a href="#main-content" className="skip-link">
             Aller au contenu principal
           </a>
-          <ConnectionBanner />
           <main id="main-content">{children}</main>
         </Providers>
       </body>
