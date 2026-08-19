@@ -105,6 +105,7 @@ export default function HomePage() {
     <div className="home">
       <div className="home__visual" aria-hidden="true">
         <span className="home__blob" />
+        <span className="home__ring" />
         <div className="home__mark-wrap">
           <span className="home__mark-backdrop" />
           <span className="home__mark-dot" />

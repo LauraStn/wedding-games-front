@@ -517,12 +517,23 @@
 .home__blob {
   display: none;
   position: absolute;
-  top: -12%;
-  left: -10%;
+  top: -18%;
+  left: -15%;
   width: 55%;
   aspect-ratio: 1;
   border-radius: 50%;
   background-color: var(--color-accent);
+}
+
+.home__ring {
+  display: none;
+  position: absolute;
+  bottom: 3%;
+  right: -8%;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
 }
 
 .home__mark-wrap {
@@ -706,6 +717,10 @@
     display: block;
   }
 
+  .home__ring {
+    display: block;
+  }
+
   .home__mark-backdrop,
   .home__mark-dot {
     display: none;
@@ -723,7 +738,12 @@
   }
 
   .home__mark-wrap {
-    width: min(440px, 75%);
+    width: min(520px, 85%);
+  }
+
+  .home__mark {
+    padding: 80px;
+    border-radius: 75px;
   }
 
   .home__panel {
