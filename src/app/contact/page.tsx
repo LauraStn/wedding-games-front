@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Image from "next/image";
 import Link from "next/link";
+import { WeddupMark } from "../../components/WeddupMark";
 
 const CONTACT_EMAIL = "contact@weddup.app";
 
@@ -33,8 +35,30 @@ export default function ContactPage() {
   });
 
   return (
-    <div className="page page--centered">
+    <div className="contact">
+      <div className="contact__decor" aria-hidden="true">
+        <span className="contact__blob" />
+        <span className="contact__ring" />
+        <div className="contact__mark-wrap">
+          <span className="contact__mark-backdrop" />
+          <span className="contact__mark-dot" />
+          <div className="contact__mark">
+            <WeddupMark className="contact__mark-svg" />
+          </div>
+        </div>
+      </div>
+
       <div className="card contact-card">
+        <Link href="/" className="link-button contact-card__back">
+          ← Retour
+        </Link>
+        <Image
+          src="/logo.png"
+          alt="Weddup"
+          width={1942}
+          height={809}
+          className="contact-card__logo"
+        />
         <h1>Besoin d&apos;aide&nbsp;?</h1>
         <p>Décrivez votre besoin, nous vous répondons rapidement.</p>
 
