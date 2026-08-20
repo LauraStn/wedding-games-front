@@ -18,7 +18,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Weddup",
+  title: "Weddup - Mariés, prêts, jouez !",
   description: "Weddup — l'application de jeux pour animer votre mariage",
 };
 
