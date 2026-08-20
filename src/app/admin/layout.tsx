@@ -34,7 +34,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <RoleGuard allow={["ADMIN"]}>
       <div className="page admin-layout">
-        <h1>Administration</h1>
+        <h1>Espace organisateur</h1>
         <AdminNav />
         <div className="admin-layout__content">{children}</div>
       </div>

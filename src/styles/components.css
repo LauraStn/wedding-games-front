@@ -93,12 +93,18 @@
 }
 
 .form input,
-.form select {
+.form select,
+.form textarea {
   padding: var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background-color: var(--color-surface);
   color: var(--color-text);
+  font-family: inherit;
+}
+
+.form textarea {
+  resize: vertical;
 }
 
 .form fieldset {
@@ -545,18 +551,18 @@
 .home__mark-backdrop {
   display: block;
   position: absolute;
-  inset: -8% 10% 10% -8%;
-  border-radius: var(--radius-lg);
+  inset: -10% -14% -10% -14%;
+  border-radius: var(--radius-xl);
   background-color: var(--color-primary);
-  transform: rotate(10deg);
+  transform: rotate(-5deg);
 }
 
 .home__mark-dot {
   display: block;
   position: absolute;
-  top: -10%;
-  right: -12%;
-  width: 34%;
+  top: -20%;
+  right: -21%;
+  width: 54%;
   aspect-ratio: 1;
   border-radius: 50%;
   background-color: var(--color-accent);
@@ -572,7 +578,7 @@
   align-items: center;
   justify-content: center;
   background-color: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
   padding: var(--space-4);
   transform: rotate(-7deg);
@@ -587,9 +593,9 @@
 .home__panel {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: var(--space-6) var(--space-4) var(--space-7);
+  padding: var(--space-6) var(--space-4) var(--space-6);
   text-align: center;
 }
 
@@ -601,8 +607,16 @@
   align-items: center;
 }
 
+.home__content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto 0;
+}
+
 .home__logotype {
-  height: 52px;
+  height: 110px;
   width: auto;
   margin: 0 0 var(--space-5);
 }
@@ -650,7 +664,8 @@
   margin: var(--space-2) 0 var(--space-5);
 }
 
-.home__admin-link {
+.home__organizer-link {
+  margin-top: var(--space-4);
   color: var(--color-text-muted);
   font-size: 0.85rem;
 }
@@ -665,21 +680,85 @@
   text-align: left;
 }
 
+.home__footer {
+  width: 100%;
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: var(--space-6);
+  row-gap: var(--space-1);
+}
+
+.home__footer-item {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.home__footer-item a {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.home__footer-item a:hover {
+  text-decoration: underline;
+}
+
+/* Découvrir Weddup (page vitrine organisateurs) -------------------------- */
+
+.discover-card {
+  max-width: 520px;
+  text-align: center;
+}
+
+.discover-card__mark {
+  width: 96px;
+  aspect-ratio: 1;
+  margin: 0 auto var(--space-4);
+}
+
+.discover-card__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+}
+
+/* Contact ------------------------------------------------------------- */
+
+.contact-card {
+  max-width: 480px;
+}
+
 @media (max-width: 599px) {
   .home__visual {
-    padding: var(--space-4);
+    padding: var(--space-8) var(--space-1) var(--space-7);
   }
-
+  .home__content {
+    margin: 0 0 auto;
+  }
   .home__mark-wrap {
     width: min(160px, 42vw);
   }
 
   .home__mark {
     padding: var(--space-3);
+    transform: none;
+  }
+  
+  .home__mark-svg {
+    transform: none;
   }
 
   .home__panel {
-    padding: var(--space-5) var(--space-4) var(--space-6);
+    padding: var(--space-1) var(--space-4) var(--space-6);
   }
 
   .home__logotype {
@@ -710,20 +789,38 @@
 
   .home__visual {
     background-color: var(--color-primary);
-    padding: var(--space-6) var(--space-4);
+    padding: var(--space-8) var(--space-4);
   }
 
   .home__blob {
     display: block;
+    top: 50%;
+    left: -15%;
+    width: 44%;
   }
 
   .home__ring {
     display: block;
+    bottom: 33%;
+    right: -8%;
+    width: 24%;
   }
 
   .home__mark-backdrop,
   .home__mark-dot {
     display: none;
+  }
+
+  .home__mark-wrap {
+    width: min(320px, 55vw);
+  }
+
+  .home__mark {
+    padding: var(--space-7);
+  }
+
+  .home__inner {
+    max-width: 560px;
   }
 }
 
@@ -741,20 +838,41 @@
     width: min(520px, 85%);
   }
 
+  .home__blob {
+    top: -18%;
+    left: -15%;
+    width: 55%;
+    background-color: var(--color-accent);
+  }
+
+  .home__ring {
+    bottom: 3%;
+    right: -8%;
+    width: 40%;
+  }
+
   .home__mark {
     padding: 80px;
-    border-radius: 75px;
+    border-radius: var(--radius-xl);
   }
 
   .home__panel {
     justify-content: flex-start;
     text-align: left;
-    padding: var(--space-7);
+    padding: var(--space-3) var(--space-8) ;
   }
 
   .home__inner {
     align-items: flex-start;
     max-width: 520px;
+  }
+
+  .home__content {
+    align-items: flex-start;
+  }
+
+  .home__footer {
+    justify-content: flex-start;
   }
 
   .home__title {
@@ -766,6 +884,6 @@
   }
 
   .home__cta {
-    width: auto;
+    width: 350px;
   }
 }

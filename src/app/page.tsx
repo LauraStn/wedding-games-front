@@ -117,115 +117,127 @@ export default function HomePage() {
 
       <div className="home__panel">
         <div className="home__inner">
-          <Image
-            src="/logo.png"
-            alt="Weddup"
-            width={1942}
-            height={809}
-            className="home__logotype"
-            priority
-          />
+          <div className="home__content">
+            <Image
+              src="/logo.png"
+              alt="Weddup"
+              width={1942}
+              height={809}
+              className="home__logotype"
+              priority
+            />
 
-          <Suspense fallback={null}>
-            <SessionExpiredNotice />
-          </Suspense>
+            <Suspense fallback={null}>
+              <SessionExpiredNotice />
+            </Suspense>
 
-          {step === "idle" && (
-            <>
-              <h1 className="home__title">
-                Mariés, prêts,
-                <br />
-                <span className="home__highlight">jouez&nbsp;!</span>
-              </h1>
-              <p className="home__subtitle">
-                Vous avez reçu une invitation&nbsp;? Rejoignez les jeux de la soirée, découvrez
-                votre binôme et laissez-vous guider.
-              </p>
+            {step === "idle" && (
+              <>
+                <h1 className="home__title">
+                  Mariés, prêts,
+                  <br />
+                  <span className="home__highlight">jouez&nbsp;!</span>
+                </h1>
+                <p className="home__subtitle">
+                  Vous avez reçu une invitation&nbsp;? Rejoignez les jeux de la soirée, découvrez
+                  votre binôme et laissez-vous guider.
+                </p>
 
-              {session ? (
-                <Link href={ROLE_HOME[session.role] ?? "/"} className="btn btn--primary home__cta">
-                  Continuer <span aria-hidden="true">→</span>
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  className="btn btn--primary home__cta"
-                  onClick={() => setStep("code")}
-                >
-                  Commencer <span aria-hidden="true">→</span>
-                </button>
-              )}
-              <p className="home__mention">Aucun compte nécessaire</p>
-            </>
-          )}
-
-          {step === "code" && (
-            <section className="home__form-section" aria-labelledby="fallback-heading">
-              <button type="button" className="link-button home__back" onClick={onBackToHome}>
-                ← Retour
-              </button>
-              <h2 id="fallback-heading">Pas de QR sous la main ?</h2>
-              <p>Saisissez votre code d&apos;invitation de secours.</p>
-
-              {!preview && (
-                <form onSubmit={onSubmitCode} noValidate className="form">
-                  <label htmlFor="code">Code d&apos;invitation</label>
-                  <input
-                    id="code"
-                    type="text"
-                    autoComplete="off"
-                    inputMode="text"
-                    aria-invalid={errors.code ? "true" : "false"}
-                    aria-describedby={errors.code ? "code-error" : undefined}
-                    {...register("code")}
-                  />
-                  {errors.code && (
-                    <p id="code-error" className="field-error" role="alert">
-                      {errors.code.message}
-                    </p>
-                  )}
-                  <button type="submit" className="btn btn--primary" disabled={resolveFallback.isPending}>
-                    {resolveFallback.isPending ? "Vérification…" : "Valider le code"}
+                {session ? (
+                  <Link href={ROLE_HOME[session.role] ?? "/"} className="btn btn--primary home__cta">
+                    Continuer <span aria-hidden="true">→</span>
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn--primary home__cta"
+                    onClick={() => setStep("code")}
+                  >
+                    Commencer <span aria-hidden="true">→</span>
                   </button>
-                </form>
-              )}
+                )}
+                <p className="home__mention">Aucun compte nécessaire</p>
+              </>
+            )}
 
-              {resolveFallback.isError && (
-                <ErrorPanel error={resolveFallback.error} title="Code invalide" />
-              )}
+            {step === "code" && (
+              <section className="home__form-section" aria-labelledby="fallback-heading">
+                <button type="button" className="link-button home__back" onClick={onBackToHome}>
+                  ← Retour
+                </button>
+                <h2 id="fallback-heading">Pas de QR sous la main ?</h2>
+                <p>Saisissez votre code d&apos;invitation de secours.</p>
 
-              {preview && !blockingStatusMessage && (
-                <div className="identity-confirm">
-                  <p>
-                    Bienvenue <strong>{preview.firstName} {preview.lastName}</strong>. Confirmez-vous
-                    votre identité ?
-                  </p>
-                  <div className="identity-confirm__actions">
-                    <button type="button" className="btn btn--primary" onClick={onConfirm} disabled={confirm.isPending}>
-                      {confirm.isPending ? "Confirmation…" : "C’est bien moi"}
+                {!preview && (
+                  <form onSubmit={onSubmitCode} noValidate className="form">
+                    <label htmlFor="code">Code d&apos;invitation</label>
+                    <input
+                      id="code"
+                      type="text"
+                      autoComplete="off"
+                      inputMode="text"
+                      aria-invalid={errors.code ? "true" : "false"}
+                      aria-describedby={errors.code ? "code-error" : undefined}
+                      {...register("code")}
+                    />
+                    {errors.code && (
+                      <p id="code-error" className="field-error" role="alert">
+                        {errors.code.message}
+                      </p>
+                    )}
+                    <button type="submit" className="btn btn--primary" disabled={resolveFallback.isPending}>
+                      {resolveFallback.isPending ? "Vérification…" : "Valider le code"}
                     </button>
+                  </form>
+                )}
+
+                {resolveFallback.isError && (
+                  <ErrorPanel error={resolveFallback.error} title="Code invalide" />
+                )}
+
+                {preview && !blockingStatusMessage && (
+                  <div className="identity-confirm">
+                    <p>
+                      Bienvenue <strong>{preview.firstName} {preview.lastName}</strong>. Confirmez-vous
+                      votre identité ?
+                    </p>
+                    <div className="identity-confirm__actions">
+                      <button type="button" className="btn btn--primary" onClick={onConfirm} disabled={confirm.isPending}>
+                        {confirm.isPending ? "Confirmation…" : "C’est bien moi"}
+                      </button>
+                      <button type="button" className="btn btn--secondary" onClick={onRestart}>
+                        Ce n&apos;est pas moi
+                      </button>
+                    </div>
+                    {confirm.isError && <ErrorPanel error={confirm.error} title="Confirmation impossible" />}
+                  </div>
+                )}
+
+                {preview && blockingStatusMessage && (
+                  <div className="error-panel" role="alert">
+                    <p className="error-panel__message">{blockingStatusMessage}</p>
                     <button type="button" className="btn btn--secondary" onClick={onRestart}>
-                      Ce n&apos;est pas moi
+                      Réessayer avec un autre code
                     </button>
                   </div>
-                  {confirm.isError && <ErrorPanel error={confirm.error} title="Confirmation impossible" />}
-                </div>
-              )}
+                )}
+              </section>
+            )}
 
-              {preview && blockingStatusMessage && (
-                <div className="error-panel" role="alert">
-                  <p className="error-panel__message">{blockingStatusMessage}</p>
-                  <button type="button" className="btn btn--secondary" onClick={onRestart}>
-                    Réessayer avec un autre code
-                  </button>
-                </div>
-              )}
-            </section>
-          )}
+            <Link href="/admin" className="home__organizer-link">
+              Espace organisateur
+            </Link>
+          </div>
 
-          <Link href="/admin" className="home__admin-link">
-            Administration
-          </Link>
+          <div className="home__footer">
+            <p className="home__footer-item">
+              Vous organisez un mariage&nbsp;?{" "}
+              <Link href="/decouvrir">Découvrir Weddup</Link>
+            </p>
+            <p className="home__footer-item">
+              Besoin d&apos;aide&nbsp;? <Link href="/contact">Contact</Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

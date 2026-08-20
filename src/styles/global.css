@@ -27,6 +27,7 @@
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 20px;
+  --radius-xl: 45px;
   --radius-pill: 999px;
 
   --space-1: 4px;
@@ -36,6 +37,7 @@
   --space-5: 24px;
   --space-6: 32px;
   --space-7: 48px;
+  --space-8: 62px;
 
   --font-sans: var(--font-space-grotesk), "Segoe UI", sans-serif;
   --font-ui: var(--font-space-grotesk), "Segoe UI", sans-serif;
