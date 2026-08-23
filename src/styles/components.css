@@ -134,6 +134,12 @@
   margin: 0;
 }
 
+.form__success {
+  color: var(--color-success);
+  font-size: 0.875rem;
+  margin-top: var(--space-2);
+}
+
 /* États --------------------------------------------------------------- */
 
 .loading-screen {

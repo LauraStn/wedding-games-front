@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "../features/auth/useSession";
 import { useConfirmInvitation, useResolveFallbackCode } from "../features/auth/mutations";
+import { ROLE_HOME } from "../features/auth/roleHome";
 import { ErrorPanel } from "../components/ErrorPanel";
 import { WeddupMark } from "../components/WeddupMark";
 import type { InvitationPreview } from "../features/auth/types";
@@ -21,14 +22,6 @@ const fallbackSchema = z.object({
 });
 
 type FallbackFormValues = z.infer<typeof fallbackSchema>;
-
-const ROLE_HOME: Record<string, string> = {
-  PARTICIPANT: "/lobby",
-  ADMIN: "/admin",
-  INTERVENANT: "/intervenant",
-  JURY: "/jury",
-  SCREEN: "/screen",
-};
 
 function invitationStatusMessage(status: InvitationPreview["status"]): string | null {
   switch (status) {
@@ -83,7 +76,7 @@ export default function HomePage() {
     if (!submittedCode) return;
     confirm.mutate(
       { code: submittedCode },
-      { onSuccess: () => router.replace("/lobby") },
+      { onSuccess: (session) => router.replace(ROLE_HOME[session.role] ?? "/lobby") },
     );
   };
 

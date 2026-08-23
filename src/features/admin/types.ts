@@ -7,6 +7,8 @@ export type Exclusion = components["schemas"]["Exclusion"];
 export type ExclusionInput = components["schemas"]["ExclusionInput"];
 export type Role = components["schemas"]["Role"];
 export type LobbyState = components["schemas"]["LobbyState"];
+export type EventConfig = components["schemas"]["EventAdminConfig"];
+export type EventConfigInput = components["schemas"]["EventAdminConfigInput"];
 
 export interface RoleAssignment {
   participantId: string;

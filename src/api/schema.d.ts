@@ -279,6 +279,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/event": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Configuration complète de l'événement (organisateur) */
+        get: operations["getEventConfig"];
+        /** Met à jour la configuration de l'événement (thème, textes, informations des mariés) */
+        put: operations["updateEventConfig"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/roles": {
         parameters: {
             query?: never;
@@ -508,6 +526,35 @@ export interface components {
             /** Format: date-time */
             arrivedAt: string;
             late: boolean;
+        };
+        EventAdminConfig: {
+            id: string;
+            slug: string;
+            title: string;
+            language: string;
+            /** @enum {string} */
+            status: "DRAFT" | "OPEN" | "LIVE" | "CLOSED";
+            spouseOneName?: string | null;
+            spouseTwoName?: string | null;
+            /** Format: date */
+            eventDate?: string | null;
+            venueName?: string | null;
+            welcomeMessage?: string | null;
+            visualConfig: {
+                [key: string]: unknown;
+            };
+        };
+        EventAdminConfigInput: {
+            title: string;
+            spouseOneName?: string | null;
+            spouseTwoName?: string | null;
+            /** Format: date */
+            eventDate?: string | null;
+            venueName?: string | null;
+            welcomeMessage?: string | null;
+            visualConfig?: {
+                [key: string]: unknown;
+            } | null;
         };
     };
     responses: never;
@@ -995,6 +1042,59 @@ export interface operations {
             };
             /** @description Suppression interdite (exclusion absolue) */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getEventConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventAdminConfig"];
+                };
+            };
+        };
+    };
+    updateEventConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventAdminConfigInput"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventAdminConfig"];
+                };
+            };
+            /** @description Requête invalide */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -7,15 +7,17 @@ import {
   deleteExclusion,
   disableParticipant,
   fetchAdminLobby,
+  fetchEventConfig,
   fetchExclusions,
   fetchParticipantInvitation,
   fetchParticipants,
   fetchRoles,
   generateParticipantInvitation,
   regenerateParticipantInvitation,
+  updateEventConfig,
   updateParticipant,
 } from "./api";
-import type { ParticipantInput } from "./types";
+import type { EventConfigInput, ParticipantInput } from "./types";
 
 export function useParticipants(search: string) {
   return useQuery({
@@ -100,4 +102,16 @@ export function useRoles() {
 
 export function useAdminLobby() {
   return useQuery({ queryKey: ["admin-lobby"], queryFn: fetchAdminLobby, refetchInterval: 15_000 });
+}
+
+export function useEventConfig() {
+  return useQuery({ queryKey: ["admin-event-config"], queryFn: fetchEventConfig });
+}
+
+export function useUpdateEventConfig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: EventConfigInput) => updateEventConfig(input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-event-config"] }),
+  });
 }

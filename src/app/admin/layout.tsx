@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { RoleGuard } from "../../features/auth/RoleGuard";
 
 const TABS = [
+  { href: "/admin/evenement", label: "Événement" },
   { href: "/admin/participants", label: "Participants" },
   { href: "/admin/exclusions", label: "Exclusions" },
   { href: "/admin/roles", label: "Rôles" },

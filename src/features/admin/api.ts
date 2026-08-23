@@ -1,6 +1,8 @@
 import { apiClient } from "../../api/client";
 import { unwrap } from "../../api/errors";
 import type {
+  EventConfig,
+  EventConfigInput,
   Exclusion,
   ExclusionInput,
   Invitation,
@@ -77,4 +79,12 @@ export async function fetchRoles(): Promise<RoleAssignment[]> {
 
 export async function fetchAdminLobby(): Promise<LobbyState> {
   return unwrap(apiClient.GET("/admin/lobby"));
+}
+
+export async function fetchEventConfig(): Promise<EventConfig> {
+  return unwrap(apiClient.GET("/admin/event"));
+}
+
+export async function updateEventConfig(input: EventConfigInput): Promise<EventConfig> {
+  return unwrap(apiClient.PUT("/admin/event", { body: input }));
 }

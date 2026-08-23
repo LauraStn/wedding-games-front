@@ -214,6 +214,68 @@ components:
         late:
           type: boolean
 
+    EventAdminConfig:
+      type: object
+      required: [id, slug, title, language, status, visualConfig]
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        title:
+          type: string
+        language:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, OPEN, LIVE, CLOSED]
+        spouseOneName:
+          type: string
+          nullable: true
+        spouseTwoName:
+          type: string
+          nullable: true
+        eventDate:
+          type: string
+          format: date
+          nullable: true
+        venueName:
+          type: string
+          nullable: true
+        welcomeMessage:
+          type: string
+          nullable: true
+        visualConfig:
+          type: object
+          additionalProperties: true
+
+    EventAdminConfigInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        spouseOneName:
+          type: string
+          nullable: true
+        spouseTwoName:
+          type: string
+          nullable: true
+        eventDate:
+          type: string
+          format: date
+          nullable: true
+        venueName:
+          type: string
+          nullable: true
+        welcomeMessage:
+          type: string
+          nullable: true
+        visualConfig:
+          type: object
+          additionalProperties: true
+          nullable: true
+
 paths:
   /theme:
     get:
@@ -583,6 +645,42 @@ paths:
           description: Supprimée
         '403':
           description: Suppression interdite (exclusion absolue)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /admin/event:
+    get:
+      operationId: getEventConfig
+      summary: Configuration complète de l'événement (organisateur)
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventAdminConfig'
+    put:
+      operationId: updateEventConfig
+      summary: Met à jour la configuration de l'événement (thème, textes, informations des mariés)
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventAdminConfigInput'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventAdminConfig'
+        '400':
+          description: Requête invalide
           content:
             application/json:
               schema:

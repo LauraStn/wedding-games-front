@@ -6,6 +6,7 @@ import { resolveInvitation } from "../../../features/auth/api";
 import { useConfirmInvitation } from "../../../features/auth/mutations";
 import { LoadingScreen } from "../../../components/LoadingScreen";
 import { ErrorPanel } from "../../../components/ErrorPanel";
+import { ROLE_HOME } from "../../../features/auth/roleHome";
 import type { InvitationPreview } from "../../../features/auth/types";
 
 function statusMessage(status: InvitationPreview["status"]): string | null {
@@ -63,7 +64,10 @@ export function InviteTokenContent({ token }: { token: string }) {
   }
 
   const onConfirm = () => {
-    confirm.mutate({ token }, { onSuccess: () => router.replace("/lobby") });
+    confirm.mutate(
+      { token },
+      { onSuccess: (session) => router.replace(ROLE_HOME[session.role] ?? "/lobby") },
+    );
   };
 
   return (
