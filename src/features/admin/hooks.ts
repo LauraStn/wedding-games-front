@@ -11,7 +11,7 @@ import {
   fetchExclusions,
   fetchParticipantInvitation,
   fetchParticipants,
-  fetchRoles,
+  fetchStaffAccounts,
   generateParticipantInvitation,
   regenerateParticipantInvitation,
   updateEventConfig,
@@ -96,8 +96,8 @@ export function useDeleteExclusion() {
   });
 }
 
-export function useRoles() {
-  return useQuery({ queryKey: ["admin-roles"], queryFn: fetchRoles });
+export function useStaffAccounts() {
+  return useQuery({ queryKey: ["admin-staff"], queryFn: fetchStaffAccounts });
 }
 
 export function useAdminLobby() {

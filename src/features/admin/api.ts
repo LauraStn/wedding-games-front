@@ -9,7 +9,7 @@ import type {
   LobbyState,
   Participant,
   ParticipantInput,
-  RoleAssignment,
+  StaffAccount,
 } from "./types";
 
 export async function fetchParticipants(search?: string): Promise<Participant[]> {
@@ -73,8 +73,8 @@ export async function deleteExclusion(id: string): Promise<void> {
   await unwrap(apiClient.DELETE("/admin/exclusions/{id}", { params: { path: { id } } }));
 }
 
-export async function fetchRoles(): Promise<RoleAssignment[]> {
-  return unwrap(apiClient.GET("/admin/roles"));
+export async function fetchStaffAccounts(): Promise<StaffAccount[]> {
+  return unwrap(apiClient.GET("/admin/staff"));
 }
 
 export async function fetchAdminLobby(): Promise<LobbyState> {

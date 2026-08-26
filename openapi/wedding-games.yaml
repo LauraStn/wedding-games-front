@@ -808,10 +808,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
 
-  /admin/roles:
+  /admin/staff:
     get:
-      operationId: listRoles
-      summary: Rôles existants et leur attribution
+      operationId: listStaffAccounts
+      summary: Comptes staff et leur rôle
       security: [{ cookieAuth: [] }]
       responses:
         '200':
@@ -821,17 +821,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  required: [participantId, firstName, lastName, role]
-                  properties:
-                    participantId:
-                      type: string
-                    firstName:
-                      type: string
-                    lastName:
-                      type: string
-                    role:
-                      $ref: '#/components/schemas/Role'
+                  $ref: '#/components/schemas/StaffAccountResponse'
 
   /admin/lobby:
     get:

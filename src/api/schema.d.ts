@@ -347,15 +347,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/admin/roles": {
+    "/admin/staff": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Rôles existants et leur attribution */
-        get: operations["listRoles"];
+        /** Comptes staff et leur rôle */
+        get: operations["listStaffAccounts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1248,7 +1248,7 @@ export interface operations {
             };
         };
     };
-    listRoles: {
+    listStaffAccounts: {
         parameters: {
             query?: never;
             header?: never;
@@ -1263,12 +1263,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        participantId: string;
-                        firstName: string;
-                        lastName: string;
-                        role: components["schemas"]["Role"];
-                    }[];
+                    "application/json": components["schemas"]["StaffAccountResponse"][];
                 };
             };
         };

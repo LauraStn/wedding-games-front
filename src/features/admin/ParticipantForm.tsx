@@ -9,7 +9,6 @@ import type { Participant, ParticipantInput } from "./types";
 const schema = z.object({
   firstName: z.string().trim().min(1, "Le prénom est requis"),
   lastName: z.string().trim().min(1, "Le nom est requis"),
-  role: z.enum(["ADMIN", "INTERVENANT", "JURY", "PARTICIPANT", "PROJECTION"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -32,7 +31,6 @@ export function ParticipantForm({ participant, onSubmit, isSubmitting, onCancel 
     defaultValues: {
       firstName: participant?.firstName ?? "",
       lastName: participant?.lastName ?? "",
-      role: participant?.role ?? "PARTICIPANT",
     },
   });
 
@@ -40,7 +38,6 @@ export function ParticipantForm({ participant, onSubmit, isSubmitting, onCancel 
     reset({
       firstName: participant?.firstName ?? "",
       lastName: participant?.lastName ?? "",
-      role: participant?.role ?? "PARTICIPANT",
     });
   }, [participant, reset]);
 
@@ -53,15 +50,6 @@ export function ParticipantForm({ participant, onSubmit, isSubmitting, onCancel 
       <label htmlFor="lastName">Nom</label>
       <input id="lastName" {...register("lastName")} aria-invalid={errors.lastName ? "true" : "false"} />
       {errors.lastName && <p className="field-error" role="alert">{errors.lastName.message}</p>}
-
-      <label htmlFor="role">Rôle</label>
-      <select id="role" {...register("role")}>
-        <option value="PARTICIPANT">Participant</option>
-        <option value="INTERVENANT">Intervenant</option>
-        <option value="JURY">Jury</option>
-        <option value="ADMIN">Administrateur</option>
-        <option value="PROJECTION">Écran de projection</option>
-      </select>
 
       <div className="form__actions">
         <button type="submit" className="btn btn--primary" disabled={isSubmitting}>

@@ -9,10 +9,4 @@ export type Role = components["schemas"]["Role"];
 export type LobbyState = components["schemas"]["LobbyState"];
 export type EventConfig = components["schemas"]["EventAdminConfig"];
 export type EventConfigInput = components["schemas"]["EventAdminConfigInput"];
-
-export interface RoleAssignment {
-  participantId: string;
-  firstName: string;
-  lastName: string;
-  role: Role;
-}
+export type StaffAccount = components["schemas"]["StaffAccountResponse"];
