@@ -1,9 +1,9 @@
 "use client";
 
-import { useAdminLobby } from "../../../features/admin/hooks";
-import { LoadingScreen } from "../../../components/LoadingScreen";
-import { ErrorPanel } from "../../../components/ErrorPanel";
-import { StatusBadge } from "../../../components/StatusBadge";
+import { useAdminLobby } from "../../../../features/admin/hooks";
+import { LoadingScreen } from "../../../../components/LoadingScreen";
+import { ErrorPanel } from "../../../../components/ErrorPanel";
+import { StatusBadge } from "../../../../components/StatusBadge";
 
 const LOBBY_LABELS: Record<string, { label: string; tone: "neutral" | "success" | "warning" }> = {
   CLOSED: { label: "Fermé", tone: "neutral" },

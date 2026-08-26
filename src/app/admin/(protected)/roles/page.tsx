@@ -1,16 +1,16 @@
 "use client";
 
-import { useRoles } from "../../../features/admin/hooks";
-import { LoadingScreen } from "../../../components/LoadingScreen";
-import { ErrorPanel } from "../../../components/ErrorPanel";
-import { EmptyState } from "../../../components/EmptyState";
+import { useRoles } from "../../../../features/admin/hooks";
+import { LoadingScreen } from "../../../../components/LoadingScreen";
+import { ErrorPanel } from "../../../../components/ErrorPanel";
+import { EmptyState } from "../../../../components/EmptyState";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Administrateur",
   INTERVENANT: "Intervenant",
   JURY: "Jury",
   PARTICIPANT: "Participant",
-  SCREEN: "Écran",
+  PROJECTION: "Écran",
 };
 
 export default function AdminRolesPage() {

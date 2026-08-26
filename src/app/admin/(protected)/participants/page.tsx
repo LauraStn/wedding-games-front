@@ -6,22 +6,22 @@ import {
   useDisableParticipant,
   useParticipants,
   useUpdateParticipant,
-} from "../../../features/admin/hooks";
-import { ParticipantForm } from "../../../features/admin/ParticipantForm";
-import { InvitationPanel } from "../../../features/admin/InvitationPanel";
-import { LoadingScreen } from "../../../components/LoadingScreen";
-import { ErrorPanel } from "../../../components/ErrorPanel";
-import { EmptyState } from "../../../components/EmptyState";
-import { StatusBadge } from "../../../components/StatusBadge";
-import { readPref, writePref } from "../../../lib/localPrefs";
-import type { Participant, ParticipantInput } from "../../../features/admin/types";
+} from "../../../../features/admin/hooks";
+import { ParticipantForm } from "../../../../features/admin/ParticipantForm";
+import { InvitationPanel } from "../../../../features/admin/InvitationPanel";
+import { LoadingScreen } from "../../../../components/LoadingScreen";
+import { ErrorPanel } from "../../../../components/ErrorPanel";
+import { EmptyState } from "../../../../components/EmptyState";
+import { StatusBadge } from "../../../../components/StatusBadge";
+import { readPref, writePref } from "../../../../lib/localPrefs";
+import type { Participant, ParticipantInput } from "../../../../features/admin/types";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Administrateur",
   INTERVENANT: "Intervenant",
   JURY: "Jury",
   PARTICIPANT: "Participant",
-  SCREEN: "Écran",
+  PROJECTION: "Écran",
 };
 
 export default function AdminParticipantsPage() {

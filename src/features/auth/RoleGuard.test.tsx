@@ -38,12 +38,19 @@ describe("RoleGuard", () => {
 
   it("restaure une session existante et affiche le contenu autorisé", async () => {
     vi.spyOn(authApi, "fetchSession").mockResolvedValue({
-      participantId: "p1",
-      firstName: "Sandrine",
-      lastName: "Santin",
+      actorType: "PARTICIPANT",
       role: "PARTICIPANT",
-      points: 12,
-      victories: 1,
+      participant: {
+        participantId: "p1",
+        eventId: "e1",
+        eventSlug: "seed-wedding",
+        firstName: "Sandrine",
+        displayName: "Sandrine Santin",
+        status: "CONNECTED",
+        totalPoints: 12,
+        totalWins: 1,
+      },
+      staff: null,
     });
 
     renderGuarded(["PARTICIPANT"]);
@@ -54,12 +61,17 @@ describe("RoleGuard", () => {
 
   it("refuse l'accès admin à un rôle intervenant", async () => {
     vi.spyOn(authApi, "fetchSession").mockResolvedValue({
-      participantId: "p2",
-      firstName: "Alex",
-      lastName: "Dupont",
+      actorType: "STAFF",
       role: "INTERVENANT",
-      points: 0,
-      victories: 0,
+      participant: null,
+      staff: {
+        id: "s1",
+        username: "alex",
+        displayName: "Alex Dupont",
+        role: "INTERVENANT",
+        active: true,
+        createdAt: "2026-08-18T10:00:00Z",
+      },
     });
 
     renderGuarded(["ADMIN"]);

@@ -48,7 +48,7 @@ function ScreenContent() {
 
 export default function ScreenPage() {
   return (
-    <RoleGuard allow={["SCREEN"]}>
+    <RoleGuard allow={["PROJECTION"]}>
       <ScreenContent />
     </RoleGuard>
   );

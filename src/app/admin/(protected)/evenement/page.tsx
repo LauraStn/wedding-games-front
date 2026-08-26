@@ -1,10 +1,10 @@
 "use client";
 
-import { useEventConfig, useUpdateEventConfig } from "../../../features/admin/hooks";
-import { EventConfigForm } from "../../../features/admin/EventConfigForm";
-import { LoadingScreen } from "../../../components/LoadingScreen";
-import { ErrorPanel } from "../../../components/ErrorPanel";
-import type { EventConfigInput } from "../../../features/admin/types";
+import { useEventConfig, useUpdateEventConfig } from "../../../../features/admin/hooks";
+import { EventConfigForm } from "../../../../features/admin/EventConfigForm";
+import { LoadingScreen } from "../../../../components/LoadingScreen";
+import { ErrorPanel } from "../../../../components/ErrorPanel";
+import type { EventConfigInput } from "../../../../features/admin/types";
 
 export default function AdminEventPage() {
   const configQuery = useEventConfig();

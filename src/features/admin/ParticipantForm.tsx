@@ -9,7 +9,7 @@ import type { Participant, ParticipantInput } from "./types";
 const schema = z.object({
   firstName: z.string().trim().min(1, "Le prénom est requis"),
   lastName: z.string().trim().min(1, "Le nom est requis"),
-  role: z.enum(["ADMIN", "INTERVENANT", "JURY", "PARTICIPANT", "SCREEN"]),
+  role: z.enum(["ADMIN", "INTERVENANT", "JURY", "PARTICIPANT", "PROJECTION"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -60,7 +60,7 @@ export function ParticipantForm({ participant, onSubmit, isSubmitting, onCancel 
         <option value="INTERVENANT">Intervenant</option>
         <option value="JURY">Jury</option>
         <option value="ADMIN">Administrateur</option>
-        <option value="SCREEN">Écran de projection</option>
+        <option value="PROJECTION">Écran de projection</option>
       </select>
 
       <div className="form__actions">

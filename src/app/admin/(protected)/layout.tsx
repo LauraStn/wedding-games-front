@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { RoleGuard } from "../../features/auth/RoleGuard";
+import { RoleGuard } from "../../../features/auth/RoleGuard";
 
 const TABS = [
   { href: "/admin/evenement", label: "Événement" },

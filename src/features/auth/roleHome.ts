@@ -6,5 +6,5 @@ export const ROLE_HOME: Record<Role, string> = {
   ADMIN: "/admin",
   INTERVENANT: "/intervenant",
   JURY: "/jury",
-  SCREEN: "/screen",
+  PROJECTION: "/screen",
 };

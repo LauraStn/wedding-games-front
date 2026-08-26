@@ -23,16 +23,17 @@ describe("InviteTokenContent", () => {
 
   it("résout un QR valide et affiche l'identité reconnue", async () => {
     vi.spyOn(authApi, "resolveInvitation").mockResolvedValue({
+      participantId: "p1",
       firstName: "Sandrine",
-      lastName: "Santin",
-      status: "VALID",
+      displayName: "Sandrine Santin",
+      eventSlug: "seed-wedding",
+      eventTitle: "Notre mariage",
     });
 
     renderInvitePage("valid-token");
 
     await waitFor(() => {
-      expect(screen.getByText(/Sandrine/)).toBeInTheDocument();
-      expect(screen.getByText(/Santin/)).toBeInTheDocument();
+      expect(screen.getByText(/Sandrine Santin/)).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: /c.est bien moi/i })).toBeInTheDocument();
   });
@@ -52,17 +53,26 @@ describe("InviteTokenContent", () => {
   it("confirme l'identité et redirige vers le salon", async () => {
     const user = userEvent.setup();
     vi.spyOn(authApi, "resolveInvitation").mockResolvedValue({
-      firstName: "Patrick",
-      lastName: "Santin",
-      status: "VALID",
-    });
-    vi.spyOn(authApi, "confirmInvitation").mockResolvedValue({
       participantId: "p1",
       firstName: "Patrick",
-      lastName: "Santin",
+      displayName: "Patrick Santin",
+      eventSlug: "seed-wedding",
+      eventTitle: "Notre mariage",
+    });
+    vi.spyOn(authApi, "confirmInvitation").mockResolvedValue({
+      actorType: "PARTICIPANT",
       role: "PARTICIPANT",
-      points: 0,
-      victories: 0,
+      participant: {
+        participantId: "p1",
+        eventId: "e1",
+        eventSlug: "seed-wedding",
+        firstName: "Patrick",
+        displayName: "Patrick Santin",
+        status: "CONNECTED",
+        totalPoints: 0,
+        totalWins: 0,
+      },
+      staff: null,
     });
 
     renderInvitePage("valid-token");

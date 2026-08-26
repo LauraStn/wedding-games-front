@@ -21,7 +21,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/invitations/resolve": {
+    "/invitations/{token}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Résout un jeton d'invitation (issu du QR personnel), sans ouvrir de session */
+        get: operations["resolveInvitation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invitations/{token}/confirm": {
         parameters: {
             query?: never;
             header?: never;
@@ -30,8 +47,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Résout un jeton d'invitation (issu du QR personnel) */
-        post: operations["resolveInvitation"];
+        /** Confirme l'identité et ouvre la session participant */
+        post: operations["confirmInvitation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -47,8 +64,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Confirme l'identité et crée la session participant, à partir du jeton QR ou du code de secours préalablement résolu. */
-        post: operations["confirmInvitation"];
+        /** (Provisoire, non supporté par le backend) Confirme l'identité à partir d'un code de secours résolu via /invitations/fallback. Conservé tel quel en attendant une décision produit — voir le plan "Réaligner l'auth sur le vrai backend". */
+        post: operations["confirmInvitationByCode"];
         delete?: never;
         options?: never;
         head?: never;
@@ -72,7 +89,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/session": {
+    "/session/me": {
         parameters: {
             query?: never;
             header?: never;
@@ -83,8 +100,41 @@ export interface paths {
         get: operations["getSession"];
         put?: never;
         post?: never;
-        /** Ferme la session courante */
-        delete: operations["closeSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/session/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ferme la session courante (idempotent) */
+        post: operations["closeSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/staff/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Authentifie un membre du staff et pose le cookie de session */
+        post: operations["staffLogin"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -438,14 +488,49 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @enum {string} */
-        Role: "ADMIN" | "INTERVENANT" | "JURY" | "PARTICIPANT" | "SCREEN";
+        Role: "ADMIN" | "INTERVENANT" | "JURY" | "PARTICIPANT" | "PROJECTION";
         ProblemDetail: {
-            type: string;
-            title: string;
+            /** @description Code d'erreur métier stable (ex. INVALID_CREDENTIALS) */
+            code: string;
+            message: string;
             status: number;
-            detail?: string;
-            /** @description Code d'erreur métier stable (ex. INVITATION_REVOKED) */
-            code?: string;
+            path?: string;
+            /** Format: date-time */
+            timestamp?: string;
+            details?: {
+                field?: string;
+                message?: string;
+            }[];
+        };
+        StaffAccountResponse: {
+            id: string;
+            username: string;
+            displayName: string;
+            role: components["schemas"]["Role"];
+            active: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        StaffLoginRequest: {
+            username: string;
+            password: string;
+        };
+        ParticipantSessionResponse: {
+            participantId: string;
+            eventId: string;
+            eventSlug: string;
+            firstName: string;
+            displayName: string;
+            status: string;
+            totalPoints: number;
+            totalWins: number;
+        };
+        InvitationResolveResponse: {
+            participantId: string;
+            firstName: string;
+            displayName: string;
+            eventSlug: string;
+            eventTitle: string;
         };
         EventTheme: {
             eventTitle: string;
@@ -468,12 +553,11 @@ export interface components {
             status: "VALID" | "REVOKED" | "ALREADY_USED" | "EXPIRED";
         };
         Session: {
-            participantId: string;
-            firstName: string;
-            lastName: string;
+            /** @enum {string} */
+            actorType: "PARTICIPANT" | "STAFF";
             role: components["schemas"]["Role"];
-            points: number;
-            victories: number;
+            participant?: components["schemas"]["ParticipantSessionResponse"] | null;
+            staff?: components["schemas"]["StaffAccountResponse"] | null;
         };
         LobbyState: {
             /** @enum {string} */
@@ -589,16 +673,12 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                token: string;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": {
-                    token: string;
-                };
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Invitation résolue */
             200: {
@@ -606,20 +686,11 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationPreview"];
+                    "application/json": components["schemas"]["InvitationResolveResponse"];
                 };
             };
-            /** @description Jeton inconnu */
+            /** @description Jeton inconnu ou révoqué */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
-                };
-            };
-            /** @description Jeton révoqué, expiré ou déjà utilisé */
-            410: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -630,6 +701,37 @@ export interface operations {
         };
     };
     confirmInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session créée (cookie posé par le backend) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Session"];
+                };
+            };
+            /** @description Jeton inconnu ou révoqué */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    confirmInvitationByCode: {
         parameters: {
             query?: never;
             header?: never;
@@ -744,6 +846,48 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    staffLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Connecté (cookie posé par le backend) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffAccountResponse"];
+                };
+            };
+            /** @description Requête invalide */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Identifiants invalides ou compte désactivé */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
             };
         };
     };

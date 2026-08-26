@@ -23,23 +23,96 @@ components:
   schemas:
     Role:
       type: string
-      enum: [ADMIN, INTERVENANT, JURY, PARTICIPANT, SCREEN]
+      enum: [ADMIN, INTERVENANT, JURY, PARTICIPANT, PROJECTION]
 
     ProblemDetail:
       type: object
-      required: [type, title, status]
+      required: [code, message, status]
       properties:
-        type:
+        code:
           type: string
-        title:
+          description: Code d'erreur métier stable (ex. INVALID_CREDENTIALS)
+        message:
           type: string
         status:
           type: integer
-        detail:
+        path:
           type: string
-        code:
+        timestamp:
           type: string
-          description: Code d'erreur métier stable (ex. INVITATION_REVOKED)
+          format: date-time
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+    StaffAccountResponse:
+      type: object
+      required: [id, username, displayName, role, active, createdAt]
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    StaffLoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    ParticipantSessionResponse:
+      type: object
+      required: [participantId, eventId, eventSlug, firstName, displayName, status, totalPoints, totalWins]
+      properties:
+        participantId:
+          type: string
+        eventId:
+          type: string
+        eventSlug:
+          type: string
+        firstName:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+        totalPoints:
+          type: integer
+        totalWins:
+          type: integer
+
+    InvitationResolveResponse:
+      type: object
+      required: [participantId, firstName, displayName, eventSlug, eventTitle]
+      properties:
+        participantId:
+          type: string
+        firstName:
+          type: string
+        displayName:
+          type: string
+        eventSlug:
+          type: string
+        eventTitle:
+          type: string
 
     EventTheme:
       type: object
@@ -89,20 +162,21 @@ components:
 
     Session:
       type: object
-      required: [participantId, firstName, lastName, role, points, victories]
+      required: [actorType, role]
       properties:
-        participantId:
+        actorType:
           type: string
-        firstName:
-          type: string
-        lastName:
-          type: string
+          enum: [PARTICIPANT, STAFF]
         role:
           $ref: '#/components/schemas/Role'
-        points:
-          type: integer
-        victories:
-          type: integer
+        participant:
+          allOf:
+            - $ref: '#/components/schemas/ParticipantSessionResponse'
+          nullable: true
+        staff:
+          allOf:
+            - $ref: '#/components/schemas/StaffAccountResponse'
+          nullable: true
 
     LobbyState:
       type: object
@@ -289,35 +363,49 @@ paths:
               schema:
                 $ref: '#/components/schemas/EventTheme'
 
-  /invitations/resolve:
-    post:
+  /invitations/{token}/resolve:
+    get:
       operationId: resolveInvitation
-      summary: Résout un jeton d'invitation (issu du QR personnel)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [token]
-              properties:
-                token:
-                  type: string
+      summary: Résout un jeton d'invitation (issu du QR personnel), sans ouvrir de session
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Invitation résolue
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InvitationPreview'
+                $ref: '#/components/schemas/InvitationResolveResponse'
         '404':
-          description: Jeton inconnu
+          description: Jeton inconnu ou révoqué
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-        '410':
-          description: Jeton révoqué, expiré ou déjà utilisé
+
+  /invitations/{token}/confirm:
+    post:
+      operationId: confirmInvitation
+      summary: Confirme l'identité et ouvre la session participant
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session créée (cookie posé par le backend)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          description: Jeton inconnu ou révoqué
           content:
             application/json:
               schema:
@@ -325,10 +413,12 @@ paths:
 
   /invitations/confirm:
     post:
-      operationId: confirmInvitation
+      operationId: confirmInvitationByCode
       summary: >
-        Confirme l'identité et crée la session participant, à partir du
-        jeton QR ou du code de secours préalablement résolu.
+        (Provisoire, non supporté par le backend) Confirme l'identité à
+        partir d'un code de secours résolu via /invitations/fallback. Conservé
+        tel quel en attendant une décision produit — voir le plan
+        "Réaligner l'auth sur le vrai backend".
       requestBody:
         required: true
         content:
@@ -382,7 +472,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
 
-  /session:
+  /session/me:
     get:
       operationId: getSession
       summary: Session active (restauration après rechargement)
@@ -400,13 +490,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-    delete:
+
+  /session/logout:
+    post:
       operationId: closeSession
-      summary: Ferme la session courante
+      summary: Ferme la session courante (idempotent)
       security: [{ cookieAuth: [] }]
       responses:
         '204':
           description: Session fermée
+
+  /auth/staff/login:
+    post:
+      operationId: staffLogin
+      summary: Authentifie un membre du staff et pose le cookie de session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffLoginRequest'
+      responses:
+        '200':
+          description: Connecté (cookie posé par le backend)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffAccountResponse'
+        '401':
+          description: Identifiants invalides ou compte désactivé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '400':
+          description: Requête invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
   /lobby:
     get:

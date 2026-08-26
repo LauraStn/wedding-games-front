@@ -9,11 +9,12 @@ export type ApiErrorKind =
   | "unknown";
 
 export interface ProblemDetail {
-  type?: string;
-  title?: string;
-  status?: number;
-  detail?: string;
   code?: string;
+  message?: string;
+  status?: number;
+  path?: string;
+  timestamp?: string;
+  details?: { field?: string; message?: string }[];
 }
 
 export class ApiError extends Error {
@@ -55,7 +56,7 @@ const DEFAULT_MESSAGES: Record<ApiErrorKind, string> = {
 export function toApiError(problem: ProblemDetail | undefined, fallbackStatus?: number): ApiError {
   const status = problem?.status ?? fallbackStatus;
   const kind = kindFromStatus(status);
-  const message = problem?.detail || DEFAULT_MESSAGES[kind];
+  const message = problem?.message || DEFAULT_MESSAGES[kind];
   return new ApiError(kind, message, status, problem?.code);
 }
 

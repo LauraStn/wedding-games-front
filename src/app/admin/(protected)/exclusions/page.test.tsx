@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
-import { renderWithProviders } from "../../../test/test-utils";
+import { renderWithProviders } from "../../../../test/test-utils";
 import AdminExclusionsPage from "./page";
-import * as adminApi from "../../../features/admin/api";
+import * as adminApi from "../../../../features/admin/api";
 
 describe("AdminExclusionsPage", () => {
   it("signale clairement les exclusions absolues issues des données de développement", async () => {

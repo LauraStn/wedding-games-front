@@ -8,11 +8,11 @@ import {
   useDeleteExclusion,
   useExclusions,
   useParticipants,
-} from "../../../features/admin/hooks";
-import { LoadingScreen } from "../../../components/LoadingScreen";
-import { ErrorPanel } from "../../../components/ErrorPanel";
-import { EmptyState } from "../../../components/EmptyState";
-import { StatusBadge } from "../../../components/StatusBadge";
+} from "../../../../features/admin/hooks";
+import { LoadingScreen } from "../../../../components/LoadingScreen";
+import { ErrorPanel } from "../../../../components/ErrorPanel";
+import { EmptyState } from "../../../../components/EmptyState";
+import { StatusBadge } from "../../../../components/StatusBadge";
 
 const schema = z
   .object({

@@ -31,7 +31,7 @@ export function ParticipantLobbyContent() {
         <header className="lobby-card__header">
           <div>
             <p className="lobby-card__eyebrow">Vous êtes connecté·e en tant que</p>
-            <h1>{session?.firstName} {session?.lastName}</h1>
+            <h1>{session?.participant?.displayName}</h1>
           </div>
           <StatusBadge tone={isOnline ? "success" : "danger"}>
             {isOnline ? "Connecté" : "Hors connexion"}
@@ -41,11 +41,11 @@ export function ParticipantLobbyContent() {
         <dl className="lobby-card__stats">
           <div>
             <dt>Points</dt>
-            <dd>{session?.points ?? 0}</dd>
+            <dd>{session?.participant?.totalPoints ?? 0}</dd>
           </div>
           <div>
             <dt>Victoires</dt>
-            <dd>{session?.victories ?? 0}</dd>
+            <dd>{session?.participant?.totalWins ?? 0}</dd>
           </div>
         </dl>
 

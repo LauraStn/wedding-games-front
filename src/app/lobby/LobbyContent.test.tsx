@@ -6,12 +6,19 @@ import * as authApi from "../../features/auth/api";
 import * as lobbyApi from "../../features/lobby/api";
 
 const session = {
-  participantId: "p1",
-  firstName: "Sandrine",
-  lastName: "Santin",
+  actorType: "PARTICIPANT" as const,
   role: "PARTICIPANT" as const,
-  points: 40,
-  victories: 2,
+  participant: {
+    participantId: "p1",
+    eventId: "e1",
+    eventSlug: "seed-wedding",
+    firstName: "Sandrine",
+    displayName: "Sandrine Santin",
+    status: "CONNECTED",
+    totalPoints: 40,
+    totalWins: 2,
+  },
+  staff: null,
 };
 
 function setOnline(value: boolean) {

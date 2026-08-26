@@ -21,7 +21,7 @@ function JuryContent() {
         <header className="lobby-card__header">
           <div>
             <p className="lobby-card__eyebrow">Membre du jury</p>
-            <h1>{session?.firstName} {session?.lastName}</h1>
+            <h1>{session?.staff?.displayName}</h1>
           </div>
           <StatusBadge tone={isOnline ? "success" : "danger"}>
             {isOnline ? "Connecté" : "Hors connexion"}
