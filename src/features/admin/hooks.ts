@@ -2,11 +2,16 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  activateCharacter,
   createExclusion,
+  createCharacter,
   createParticipant,
+  deactivateCharacter,
+  deleteCharacter,
   deleteExclusion,
   disableParticipant,
   fetchAdminLobby,
+  fetchCharacters,
   fetchEventConfig,
   fetchExclusions,
   fetchParticipantInvitation,
@@ -15,10 +20,11 @@ import {
   generateParticipantInvitation,
   renewParticipantFallbackCode,
   revokeParticipantInvitation,
+  updateCharacter,
   updateEventConfig,
   updateParticipant,
 } from "./api";
-import type { EventConfigInput, ParticipantUpdateInput } from "./types";
+import type { EventConfigInput, GameCharacterUpdateInput, ParticipantUpdateInput } from "./types";
 
 export function useParticipants(search: string) {
   return useQuery({
@@ -123,5 +129,49 @@ export function useUpdateEventConfig() {
   return useMutation({
     mutationFn: (input: EventConfigInput) => updateEventConfig(input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-event-config"] }),
+  });
+}
+
+export function useCharacters() {
+  return useQuery({ queryKey: ["admin-characters"], queryFn: fetchCharacters });
+}
+
+export function useCreateCharacter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createCharacter,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-characters"] }),
+  });
+}
+
+export function useUpdateCharacter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: GameCharacterUpdateInput }) => updateCharacter(id, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-characters"] }),
+  });
+}
+
+export function useDeleteCharacter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteCharacter,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-characters"] }),
+  });
+}
+
+export function useActivateCharacter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: activateCharacter,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-characters"] }),
+  });
+}
+
+export function useDeactivateCharacter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deactivateCharacter,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-characters"] }),
   });
 }

@@ -12,3 +12,6 @@ export type LobbyState = components["schemas"]["LobbyResponse"];
 export type EventConfig = components["schemas"]["EventPublicConfigResponse"];
 export type EventConfigInput = components["schemas"]["EventConfigUpdateRequest"];
 export type StaffAccount = components["schemas"]["StaffAccountResponse"];
+export type GameCharacter = components["schemas"]["GameCharacterResponse"];
+export type GameCharacterCreateInput = components["schemas"]["GameCharacterCreateRequest"];
+export type GameCharacterUpdateInput = components["schemas"]["GameCharacterUpdateRequest"];

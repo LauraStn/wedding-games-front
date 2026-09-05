@@ -2,9 +2,9 @@
 
 import { useSession } from "../../features/auth/useSession";
 import { useLobby } from "../../features/lobby/useLobby";
+import { TeamReveal } from "../../features/team/TeamReveal";
 import { LoadingScreen } from "../../components/LoadingScreen";
 import { ErrorPanel } from "../../components/ErrorPanel";
-import { EmptyState } from "../../components/EmptyState";
 import { StatusBadge } from "../../components/StatusBadge";
 import { useOnlineStatus } from "../../lib/useOnlineStatus";
 
@@ -76,11 +76,7 @@ export function ParticipantLobbyContent() {
         )}
       </div>
 
-      <EmptyState
-        title="Les activités arrivent bientôt"
-        description="Cet espace accueillera les jeux, questions et votes dès leur ouverture par l'équipe d'animation."
-        icon="🎉"
-      />
+      <TeamReveal />
     </div>
   );
 }

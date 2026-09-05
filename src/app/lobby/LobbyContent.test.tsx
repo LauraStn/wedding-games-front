@@ -1,9 +1,11 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../test/test-utils";
 import { ParticipantLobbyContent } from "./LobbyContent";
+import { ApiError } from "../../api/errors";
 import * as authApi from "../../features/auth/api";
 import * as lobbyApi from "../../features/lobby/api";
+import * as teamApi from "../../features/team/api";
 
 const session = {
   actorType: "PARTICIPANT" as const,
@@ -26,6 +28,9 @@ function setOnline(value: boolean) {
 }
 
 describe("ParticipantLobbyContent", () => {
+  beforeEach(() => {
+    vi.spyOn(teamApi, "fetchMyTeam").mockRejectedValue(new ApiError("not-found", "Équipe non formée."));
+  });
   afterEach(() => setOnline(true));
 
   it("affiche l'identité confirmée, les points/victoires et une zone réservée aux futures activités, y compris sur mobile", async () => {
@@ -40,7 +45,9 @@ describe("ParticipantLobbyContent", () => {
     });
     expect(screen.getByText("40")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
-    expect(screen.getByText(/les activités arrivent bientôt/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/les activités arrivent bientôt/i)).toBeInTheDocument();
+    });
   });
 
   it("signale la perte de connexion et propose une reconnexion", async () => {

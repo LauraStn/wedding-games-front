@@ -6,6 +6,9 @@ import type {
   EventConfigInput,
   Exclusion,
   ExclusionInput,
+  GameCharacter,
+  GameCharacterCreateInput,
+  GameCharacterUpdateInput,
   InvitationAdmin,
   InvitationStatus,
   LobbyState,
@@ -99,4 +102,32 @@ export async function fetchEventConfig(): Promise<EventConfig> {
 
 export async function updateEventConfig(input: EventConfigInput): Promise<EventConfig> {
   return unwrap(apiClient.PUT("/admin/event", { body: input }));
+}
+
+export async function fetchCharacters(): Promise<GameCharacter[]> {
+  const eventId = await getCurrentEventId();
+  return unwrap(apiClient.GET("/admin/events/{eventId}/characters", { params: { path: { eventId } } }));
+}
+
+export async function createCharacter(input: GameCharacterCreateInput): Promise<GameCharacter> {
+  const eventId = await getCurrentEventId();
+  return unwrap(
+    apiClient.POST("/admin/events/{eventId}/characters", { params: { path: { eventId } }, body: input }),
+  );
+}
+
+export async function updateCharacter(id: string, input: GameCharacterUpdateInput): Promise<GameCharacter> {
+  return unwrap(apiClient.PUT("/admin/characters/{id}", { params: { path: { id } }, body: input }));
+}
+
+export async function deleteCharacter(id: string): Promise<void> {
+  await unwrap(apiClient.DELETE("/admin/characters/{id}", { params: { path: { id } } }));
+}
+
+export async function activateCharacter(id: string): Promise<GameCharacter> {
+  return unwrap(apiClient.POST("/admin/characters/{id}/activate", { params: { path: { id } } }));
+}
+
+export async function deactivateCharacter(id: string): Promise<GameCharacter> {
+  return unwrap(apiClient.POST("/admin/characters/{id}/deactivate", { params: { path: { id } } }));
 }
