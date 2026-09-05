@@ -4,16 +4,16 @@
  */
 
 export interface paths {
-    "/theme": {
+    "/staff/answers/{answerId}/content": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Configuration visuelle et textuelle de l'événement */
-        get: operations["getTheme"];
-        put?: never;
+        get?: never;
+        /** Corrige le contenu (faute de frappe, texte illisible) sans changer le sens */
+        put: operations["correct"];
         post?: never;
         delete?: never;
         options?: never;
@@ -21,16 +21,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/invitations/{token}/resolve": {
+    "/quiz/questions/{questionId}/answer": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Résout un jeton d'invitation (issu du QR personnel), sans ouvrir de session */
-        get: operations["resolveInvitation"];
-        put?: never;
+        /** Etat actuel de la reponse de mon equipe (poll pour suivre la saisie en direct) */
+        get: operations["getMyTeamAnswer"];
+        /** Met a jour le contenu de la reponse (reserve a celui qui a la main) */
+        put: operations["updateContent"];
         post?: never;
         delete?: never;
         options?: never;
@@ -38,7 +39,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/invitations/{token}/confirm": {
+    "/admin/staff/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get"];
+        put: operations["update"];
+        post?: never;
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/participants/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_1"];
+        put: operations["update_1"];
+        post?: never;
+        delete: operations["delete_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Configuration d'un evenement donne (usage multi-evenements) */
+        get: operations["get_2"];
+        /** Met a jour la configuration d'un evenement donne (usage multi-evenements) */
+        put: operations["update_2"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/event": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Configuration de l'unique evenement de ce deploiement */
+        get: operations["getCurrent"];
+        /** Met a jour la configuration de l'unique evenement de ce deploiement */
+        put: operations["updateCurrent"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/characters/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_3"];
+        put: operations["update_3"];
+        post?: never;
+        delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vote/questions/{questionId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -47,15 +132,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Confirme l'identité et ouvre la session participant */
-        post: operations["confirmInvitation"];
+        /** Vote pour une reponse (jamais celle de sa propre equipe, une seule fois par question) */
+        post: operations["vote"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/invitations/confirm": {
+    "/staff/questions/{questionId}/teams/{teamId}/relaunch": {
         parameters: {
             query?: never;
             header?: never;
@@ -64,15 +149,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** (Provisoire, non supporté par le backend) Confirme l'identité à partir d'un code de secours résolu via /invitations/fallback. Conservé tel quel en attendant une décision produit — voir le plan "Réaligner l'auth sur le vrai backend". */
-        post: operations["confirmInvitationByCode"];
+        /** Relance une equipe: reponse remise a vide, plus personne n'a la main */
+        post: operations["relaunchTeam"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/invitations/fallback": {
+    "/staff/questions/{questionId}/close": {
         parameters: {
             query?: never;
             header?: never;
@@ -81,25 +166,325 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Résout un code d'invitation de secours saisi manuellement */
-        post: operations["resolveFallbackCode"];
+        /** Ferme la question (ACTIVE -> CLOSED): plus aucune modification de reponse n'est acceptee */
+        post: operations["close"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/session/me": {
+    "/staff/questions/{questionId}/activate": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Session active (restauration après rechargement) */
-        get: operations["getSession"];
+        get?: never;
         put?: never;
-        post?: never;
+        /** Active la question (PENDING -> ACTIVE): les equipes peuvent desormais y repondre */
+        post: operations["activate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/games/{gameId}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Demarre la partie (statut ACTIVE, phase PREPARATION) */
+        post: operations["start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/games/{gameId}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reprend une partie en pause, sur la meme phase */
+        post: operations["resume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/games/{gameId}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Met la partie en pause, sans changer la phase en cours */
+        post: operations["pause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/games/{gameId}/next-question": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Passe a la question suivante (phase QUESTION), depuis PREPARATION ou RESULT */
+        post: operations["nextQuestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/matchmaking/launch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Genere les equipes a partir des participants presents dans le salon
+         * @description Peut etre relance a volonte: les equipes precedentes sont remplacees. Echoue explicitement (409) si aucune repartition ne respecte les exclusions absolues.
+         */
+        post: operations["launch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/matchmaking/latecomers/{participantId}/pair-with/{otherParticipantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Forme un nouveau binome entre deux retardataires */
+        post: operations["pairWith"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/matchmaking/latecomers/{participantId}/join-team/{teamId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Integre le retardataire dans un binome existant, qui devient un trio */
+        post: operations["joinTeam"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["start_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resume_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["pause_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/participants/{participantId}/late": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["markLate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/participants/{participantId}/admit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["admit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["open"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["lock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["finish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["close_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/answers/{answerId}/hide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Masque ou refuse la reponse: jamais projetee, ni transmise au vote/jury */
+        post: operations["hide"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/answers/{answerId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accepte la reponse: eligible a la projection, au vote et au jury */
+        post: operations["accept"];
         delete?: never;
         options?: never;
         head?: never;
@@ -115,8 +500,96 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Ferme la session courante (idempotent) */
-        post: operations["closeSession"];
+        /** Revoque la session courante et efface le cookie */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quiz/questions/{questionId}/answer/take-control": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Je prends la main: je deviens redacteur pour mon equipe
+         * @description Peut aussi etre appele pour transferer le controle: le precedent redacteur passe en lecture seule, le contenu deja saisi est conserve.
+         */
+        post: operations["takeControl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lobby/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Declare le participant courant pret, distinct d'une simple presence connectee */
+        post: operations["ready"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lobby/heartbeat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Signale la presence du participant courant dans le salon (a appeler periodiquement) */
+        post: operations["heartbeat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invitations/{token}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirme l'identite et ouvre une session participante opaque via cookie HttpOnly */
+        post: operations["confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invitations/fallback/{code}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirme l'identite via le code de secours et ouvre une session participante */
+        post: operations["confirm_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -132,215 +605,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Authentifie un membre du staff et pose le cookie de session */
-        post: operations["staffLogin"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/lobby": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** État du salon (participant) */
-        get: operations["getLobby"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/screen/state": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** État public destiné à l'écran de projection */
-        get: operations["getScreenState"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/participants": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Liste et recherche des participants */
-        get: operations["listParticipants"];
-        put?: never;
-        /** Ajoute un participant */
-        post: operations["createParticipant"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/participants/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Modifie un participant */
-        patch: operations["updateParticipant"];
-        trace?: never;
-    };
-    "/admin/participants/{id}/disable": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Désactive un participant */
-        post: operations["disableParticipant"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/participants/{id}/invitation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Statut de l'invitation d'un participant */
-        get: operations["getParticipantInvitation"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/participants/{id}/invitation/generate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Génère l'invitation d'un participant */
-        post: operations["generateParticipantInvitation"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/participants/{id}/invitation/regenerate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Régénère l'invitation d'un participant (invalide l'ancien jeton) */
-        post: operations["regenerateParticipantInvitation"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/participants/{id}/invitation/qr": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Image QR de l'invitation (si disponible) */
-        get: operations["getParticipantInvitationQr"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/exclusions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Liste des exclusions */
-        get: operations["listExclusions"];
-        put?: never;
-        /** Crée une exclusion */
-        post: operations["createExclusion"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/exclusions/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Supprime une exclusion (les exclusions absolues sont protégées côté backend) */
-        delete: operations["deleteExclusion"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/event": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Configuration complète de l'événement (organisateur) */
-        get: operations["getEventConfig"];
-        /** Met à jour la configuration de l'événement (thème, textes, informations des mariés) */
-        put: operations["updateEventConfig"];
-        post?: never;
+        /** Authentifie un membre de l'organisation et ouvre une session opaque via cookie HttpOnly */
+        post: operations["login"];
         delete?: never;
         options?: never;
         head?: never;
@@ -354,51 +620,37 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Comptes staff et leur rôle */
-        get: operations["listStaffAccounts"];
+        get: operations["list"];
         put?: never;
-        post?: never;
+        post: operations["create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/admin/lobby": {
+    "/admin/participants/{participantId}/invitation": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** État détaillé du salon (vue administrateur) */
-        get: operations["getAdminLobby"];
+        /** Consulte le statut de l'invitation active d'un participant (sans exposer le jeton) */
+        get: operations["getStatus"];
         put?: never;
-        post?: never;
+        /**
+         * Genere une nouvelle invitation, invalidant l'ancien jeton actif s'il existait
+         * @description Le jeton brut n'est retourne qu'une seule fois, dans cette reponse.
+         */
+        post: operations["generateOrRegenerate"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/intervenant/lobby": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** État du salon (vue intervenant) */
-        get: operations["getIntervenantLobby"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/intervenant/lobby/open": {
+    "/admin/participants/{participantId}/invitation/revoke": {
         parameters: {
             query?: never;
             header?: never;
@@ -407,15 +659,18 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Ouvre le salon */
-        post: operations["openLobby"];
+        /**
+         * Revoque le jeton actif d'un participant sans en emettre un nouveau
+         * @description Utile pour un QR perdu ou compromis: coupe l'acces immediatement, sans reemission instantanee. L'administrateur regenere plus tard via POST .../invitation s'il le souhaite.
+         */
+        post: operations["revoke"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/intervenant/lobby/close": {
+    "/admin/participants/{participantId}/invitation/fallback-code/renew": {
         parameters: {
             query?: never;
             header?: never;
@@ -424,15 +679,18 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Ferme le salon */
-        post: operations["closeLobby"];
+        /**
+         * Renouvelle uniquement le code de secours, sans toucher au jeton QR actif
+         * @description Utile si le participant craint que son code ait ete vu par quelqu'un d'autre, sans avoir a rescanner un nouveau QR.
+         */
+        post: operations["renewFallbackCode"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/intervenant/lobby/lock": {
+    "/admin/participants/{id}/disable": {
         parameters: {
             query?: never;
             header?: never;
@@ -441,23 +699,237 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Verrouille le salon */
-        post: operations["lockLobby"];
+        post: operations["disable"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/intervenant/arrivals/recent": {
+    "/admin/games/{gameId}/questions": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Dernières arrivées */
-        get: operations["listRecentArrivals"];
+        get: operations["list_1"];
+        put?: never;
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/participants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_2"];
+        put?: never;
+        post: operations["create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/participants/invitations/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Genere (ou regenere) une invitation pour tout ou partie des participants de l'evenement, et retourne directement la planche d'impression PDF des QR
+         * @description Les jetons bruts ne sont jamais retournes en JSON: ils n'existent que le temps de produire les QR de cette planche, puis disparaissent definitivement.
+         */
+        post: operations["generateBatchAndPrintSheet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/participants/import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/participants/import/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirm_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_3"];
+        put?: never;
+        post: operations["create_3"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/exclusions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_4"];
+        put?: never;
+        post: operations["create_4"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/characters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_5"];
+        put?: never;
+        post: operations["create_5"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/characters/{id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["deactivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/characters/{id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["activate_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/participants/{id}/table": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateTable"];
+        trace?: never;
+    };
+    "/admin/participants/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateStatus"];
+        trace?: never;
+    };
+    "/admin/exclusions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_4"];
+        put?: never;
+        post?: never;
+        delete: operations["delete_3"];
+        options?: never;
+        head?: never;
+        patch: operations["updateReason"];
+        trace?: never;
+    };
+    "/vote/questions/{questionId}/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Options de vote pour cette question
+         * @description Reponses acceptees uniquement, ordre aleatoire, jamais la reponse de ma propre equipe, sans nom ni personnage visible.
+         */
+        get: operations["options"];
         put?: never;
         post?: never;
         delete?: never;
@@ -466,15 +938,283 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/intervenant/arrivals/late": {
+    "/team/me": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Invités arrivés en retard (non encore enregistrés) */
-        get: operations["listLateArrivals"];
+        /** Mon personnage assigne et celui de mon/mes partenaire(s) de binome/trio */
+        get: operations["getMyTeam"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/questions/{questionId}/finalists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Finalistes du top 3 (jusqu'a 4+ en cas d'egalite, jamais de tirage au sort eliminant une egalite)
+         * @description Le nombre de votes est masque par defaut (revealVoteCount=false) pour ne pas influencer le jugement du jury; passer revealVoteCount=true pour l'afficher.
+         */
+        get: operations["finalists"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/questions/{questionId}/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liste toutes les reponses d'une question pour moderation (y compris masquees) */
+        get: operations["list_6"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/matchmaking/teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consulte les equipes actuelles sans relancer le matchmaking */
+        get: operations["teams"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/matchmaking/latecomers/{participantId}/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Equipes compatibles (deviendraient un trio) et autres retardataires compatibles (formeraient un nouveau binome), en respectant les exclusions absolues */
+        get: operations["getOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/lobby/participants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["participants"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/session/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retourne l'identite, le role et - pour un participant - les points/victoires a jour */
+        get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lobby": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Etat du salon adapte au participant (statut, nombre de presents, consignes) */
+        get: operations["getStatus_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invitations/{token}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resout un jeton d'invitation en identite a faire confirmer par l'invite */
+        get: operations["resolve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invitations/fallback/{code}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resout un code de secours en identite a faire confirmer par l'invite */
+        get: operations["resolve_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{slug}/public": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recupere la configuration publique (non sensible) de l'evenement */
+        get: operations["getPublicConfig"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/questions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_5"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/games/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_6"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/participants/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/lobby": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getLobby"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/lobby/participants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["participants_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/events/{eventId}/exclusions/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["check"];
         put?: never;
         post?: never;
         delete?: never;
@@ -487,158 +1227,454 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @enum {string} */
-        Role: "ADMIN" | "INTERVENANT" | "JURY" | "PARTICIPANT" | "PROJECTION";
-        ProblemDetail: {
-            /** @description Code d'erreur métier stable (ex. INVALID_CREDENTIALS) */
-            code: string;
-            message: string;
-            status: number;
-            path?: string;
+        AnswerCorrectionRequest: {
+            content: string;
+        };
+        AnswerModerationResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            questionId?: string;
+            /** Format: uuid */
+            teamId?: string;
+            teamLabel?: string;
+            content?: string;
+            /** @enum {string} */
+            moderationStatus?: "PENDING" | "ACCEPTED" | "HIDDEN";
+            /** Format: uuid */
+            controllingParticipantId?: string;
             /** Format: date-time */
-            timestamp?: string;
-            details?: {
-                field?: string;
-                message?: string;
-            }[];
+            lastEditedAt?: string;
+        };
+        QuizAnswerUpdateRequest: {
+            content: string;
+        };
+        QuizAnswerResponse: {
+            /** Format: uuid */
+            questionId?: string;
+            /** Format: uuid */
+            teamId?: string;
+            content?: string;
+            /** Format: uuid */
+            controllingParticipantId?: string;
+            controllingParticipantName?: string;
+            /** Format: date-time */
+            lastEditedAt?: string;
+        };
+        StaffAccountUpdateRequest: {
+            displayName: string;
+            /** @enum {string} */
+            role: "ADMIN" | "INTERVENANT" | "JURY" | "PROJECTION";
+            active?: boolean;
+            password?: string;
         };
         StaffAccountResponse: {
-            id: string;
-            username: string;
-            displayName: string;
-            role: components["schemas"]["Role"];
-            active: boolean;
+            /** Format: uuid */
+            id?: string;
+            username?: string;
+            displayName?: string;
+            /** @enum {string} */
+            role?: "ADMIN" | "INTERVENANT" | "JURY" | "PROJECTION";
+            active?: boolean;
             /** Format: date-time */
-            createdAt: string;
+            createdAt?: string;
+        };
+        ParticipantUpdateRequest: {
+            firstName: string;
+            lastName: string;
+            displayName: string;
+            tableLabel?: string;
+            /** @enum {string} */
+            participantType: "GUEST" | "SPOUSE" | "ORGANIZER";
+            /** @enum {string} */
+            status: "INVITED" | "CONFIRMED" | "CONNECTED" | "PAUSED" | "ABSENT" | "DISABLED";
+            /** @enum {string} */
+            gender?: "MALE" | "FEMALE";
+        };
+        ParticipantResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            eventId?: string;
+            firstName?: string;
+            lastName?: string;
+            displayName?: string;
+            tableLabel?: string;
+            /** @enum {string} */
+            participantType?: "GUEST" | "SPOUSE" | "ORGANIZER";
+            /** @enum {string} */
+            status?: "INVITED" | "CONFIRMED" | "CONNECTED" | "PAUSED" | "ABSENT" | "DISABLED";
+            /** @enum {string} */
+            gender?: "MALE" | "FEMALE";
+            /** Format: int32 */
+            totalPoints?: number;
+            /** Format: int32 */
+            totalWins?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        EventConfigUpdateRequest: {
+            title: string;
+            spouseOneName?: string;
+            spouseTwoName?: string;
+            /** Format: date */
+            eventDate?: string;
+            venueName?: string;
+            welcomeMessage?: string;
+            visualConfig?: {
+                [key: string]: unknown;
+            };
+        };
+        EventPublicConfigResponse: {
+            /** Format: uuid */
+            id?: string;
+            slug?: string;
+            title?: string;
+            language?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "OPEN" | "LIVE" | "CLOSED";
+            spouseOneName?: string;
+            spouseTwoName?: string;
+            /** Format: date */
+            eventDate?: string;
+            venueName?: string;
+            welcomeMessage?: string;
+            visualConfig?: {
+                [key: string]: unknown;
+            };
+        };
+        GameCharacterUpdateRequest: {
+            name: string;
+            description?: string;
+            avatarUrl?: string;
+            /** @enum {string} */
+            gender?: "MALE" | "FEMALE";
+        };
+        GameCharacterResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            eventId?: string;
+            name?: string;
+            description?: string;
+            avatarUrl?: string;
+            active?: boolean;
+            /** @enum {string} */
+            gender?: "MALE" | "FEMALE";
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        VoteCastRequest: {
+            /** Format: uuid */
+            answerId: string;
+        };
+        VoteResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            questionId?: string;
+            /** Format: uuid */
+            answerId?: string;
+        };
+        QuestionResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            gameId?: string;
+            prompt?: string;
+            /** Format: int32 */
+            sequence?: number;
+            /** @enum {string} */
+            status?: "PENDING" | "ACTIVE" | "CLOSED";
+            /** @enum {string} */
+            source?: "ADMIN" | "GUEST";
+        };
+        GameResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            eventId?: string;
+            /** @enum {string} */
+            type?: "QUIZ" | "LUI_OU_ELLE" | "BLIND_TEST" | "CUSTOM";
+            title?: string;
+            /** Format: int32 */
+            sequence?: number;
+            /** @enum {string} */
+            status?: "DRAFT" | "READY" | "ACTIVE" | "PAUSED" | "FINISHED";
+            /** @enum {string} */
+            phase?: "LOBBY" | "PREPARATION" | "QUESTION" | "ANSWERS_CLOSED" | "VOTE" | "JURY" | "RESULT";
+        };
+        TeamMemberResponse: {
+            /** Format: uuid */
+            participantId?: string;
+            displayName?: string;
+            /** Format: uuid */
+            characterId?: string;
+            characterName?: string;
+        };
+        TeamResponse: {
+            /** Format: uuid */
+            id?: string;
+            label?: string;
+            members?: components["schemas"]["TeamMemberResponse"][];
+        };
+        LobbyResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            eventId?: string;
+            /** @enum {string} */
+            status?: "CLOSED" | "OPEN" | "LOCKED" | "ACTIVE" | "PAUSED" | "FINISHED";
+            /** Format: date-time */
+            openedAt?: string;
+            /** Format: date-time */
+            closedAt?: string;
+        };
+        LobbyParticipantResponse: {
+            /** Format: uuid */
+            participantId?: string;
+            displayName?: string;
+            /** @enum {string} */
+            connectionStatus?: "CONNECTED" | "DISCONNECTED" | "LATE" | "READY";
+            /** Format: date-time */
+            arrivedAt?: string;
+            /** Format: date-time */
+            lastActivityAt?: string;
+            possibleDuplicate?: boolean;
+            possibleQrReuse?: boolean;
+        };
+        LobbyHeartbeatResponse: {
+            /** @enum {string} */
+            connectionStatus?: "CONNECTED" | "DISCONNECTED" | "LATE" | "READY";
+            /** Format: date-time */
+            lastActivityAt?: string;
+        };
+        ParticipantSessionResponse: {
+            /** Format: uuid */
+            participantId?: string;
+            /** Format: uuid */
+            eventId?: string;
+            eventSlug?: string;
+            firstName?: string;
+            displayName?: string;
+            /** @enum {string} */
+            status?: "INVITED" | "CONFIRMED" | "CONNECTED" | "PAUSED" | "ABSENT" | "DISABLED";
+            /** Format: int32 */
+            totalPoints?: number;
+            /** Format: int32 */
+            totalWins?: number;
         };
         StaffLoginRequest: {
             username: string;
             password: string;
         };
-        ParticipantSessionResponse: {
-            participantId: string;
-            eventId: string;
-            eventSlug: string;
-            firstName: string;
+        StaffAccountCreateRequest: {
+            username: string;
+            password: string;
             displayName: string;
-            status: string;
-            totalPoints: number;
-            totalWins: number;
+            /** @enum {string} */
+            role: "ADMIN" | "INTERVENANT" | "JURY" | "PROJECTION";
+        };
+        InvitationAdminResponse: {
+            /** Format: uuid */
+            invitationId?: string;
+            /** Format: uuid */
+            participantId?: string;
+            rawToken?: string;
+            invitationUrl?: string;
+            fallbackCode?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        InvitationFallbackCodeResponse: {
+            fallbackCode?: string;
+        };
+        QuestionCreateRequest: {
+            prompt: string;
+            /** Format: int32 */
+            sequence?: number;
+        };
+        ParticipantCreateRequest: {
+            firstName: string;
+            lastName: string;
+            displayName: string;
+            tableLabel?: string;
+            /** @enum {string} */
+            participantType: "GUEST" | "SPOUSE" | "ORGANIZER";
+            /** @enum {string} */
+            gender?: "MALE" | "FEMALE";
+        };
+        InvitationBatchRequest: {
+            participantIds?: string[];
+        };
+        ParticipantImportPreviewResponse: {
+            rows?: components["schemas"]["ParticipantImportRow"][];
+            /** Format: int32 */
+            totalRows?: number;
+            /** Format: int32 */
+            validCount?: number;
+            /** Format: int32 */
+            duplicateCount?: number;
+            /** Format: int32 */
+            rejectedCount?: number;
+        };
+        ParticipantImportRow: {
+            /** Format: int32 */
+            rowNumber?: number;
+            firstName?: string;
+            lastName?: string;
+            displayName?: string;
+            tableLabel?: string;
+            /** @enum {string} */
+            participantType?: "GUEST" | "SPOUSE" | "ORGANIZER";
+            /** @enum {string} */
+            status?: "VALID" | "DUPLICATE_IN_FILE" | "DUPLICATE_EXISTING" | "REJECTED";
+            rejectionReason?: string;
+        };
+        ParticipantImportConfirmRequest: {
+            rows: components["schemas"]["ParticipantImportRowInput"][];
+        };
+        ParticipantImportRowInput: {
+            firstName: string;
+            lastName: string;
+            displayName: string;
+            tableLabel?: string;
+            /** @enum {string} */
+            participantType: "GUEST" | "SPOUSE" | "ORGANIZER";
+        };
+        ParticipantImportConfirmResponse: {
+            created?: components["schemas"]["ParticipantResponse"][];
+            /** Format: int32 */
+            createdCount?: number;
+        };
+        GameCreateRequest: {
+            /** @enum {string} */
+            type: "QUIZ" | "LUI_OU_ELLE" | "BLIND_TEST" | "CUSTOM";
+            title: string;
+            /** Format: int32 */
+            sequence?: number;
+        };
+        PairingExclusionCreateRequest: {
+            /** Format: uuid */
+            participantAId: string;
+            /** Format: uuid */
+            participantBId: string;
+            reason?: string;
+            /** @enum {string} */
+            exclusionType: "HARD" | "PREFERENCE";
+        };
+        PairingExclusionResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            eventId?: string;
+            /** Format: uuid */
+            participantAId?: string;
+            /** Format: uuid */
+            participantBId?: string;
+            reason?: string;
+            /** @enum {string} */
+            exclusionType?: "HARD" | "PREFERENCE";
+            locked?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        GameCharacterCreateRequest: {
+            name: string;
+            description?: string;
+            avatarUrl?: string;
+            /** @enum {string} */
+            gender?: "MALE" | "FEMALE";
+        };
+        ParticipantTableUpdateRequest: {
+            tableLabel?: string;
+        };
+        ParticipantStatusUpdateRequest: {
+            /** @enum {string} */
+            status: "INVITED" | "CONFIRMED" | "CONNECTED" | "PAUSED" | "ABSENT" | "DISABLED";
+        };
+        PairingExclusionReasonUpdateRequest: {
+            reason?: string;
+        };
+        VotingOptionResponse: {
+            /** Format: uuid */
+            answerId?: string;
+            content?: string;
+        };
+        MyTeamResponse: {
+            /** Format: uuid */
+            teamId?: string;
+            /** Format: uuid */
+            myCharacterId?: string;
+            myCharacterName?: string;
+            myCharacterAvatarUrl?: string;
+            myCharacterDescription?: string;
+            partners?: components["schemas"]["TeammateResponse"][];
+        };
+        TeammateResponse: {
+            /** Format: uuid */
+            participantId?: string;
+            displayName?: string;
+            /** Format: uuid */
+            characterId?: string;
+            characterName?: string;
+            characterAvatarUrl?: string;
+        };
+        FinalistResponse: {
+            /** Format: uuid */
+            answerId?: string;
+            content?: string;
+            /** Format: int64 */
+            voteCount?: number;
+        };
+        LatecomerCandidateResponse: {
+            /** Format: uuid */
+            participantId?: string;
+            displayName?: string;
+        };
+        LatecomerOptionsResponse: {
+            compatibleTeams?: components["schemas"]["TeamResponse"][];
+            compatibleLatecomers?: components["schemas"]["LatecomerCandidateResponse"][];
+        };
+        SessionMeResponse: {
+            /** @enum {string} */
+            actorType?: "PARTICIPANT" | "STAFF";
+            /** @enum {string} */
+            role?: "ADMIN" | "INTERVENANT" | "JURY" | "PARTICIPANT" | "PROJECTION";
+            participant?: components["schemas"]["ParticipantSessionResponse"];
+            staff?: components["schemas"]["StaffAccountResponse"];
+        };
+        LobbyParticipantStatusResponse: {
+            /** @enum {string} */
+            status?: "CLOSED" | "OPEN" | "LOCKED" | "ACTIVE" | "PAUSED" | "FINISHED";
+            /** Format: int64 */
+            presentCount?: number;
+            welcomeMessage?: string;
         };
         InvitationResolveResponse: {
-            participantId: string;
-            firstName: string;
-            displayName: string;
-            eventSlug: string;
-            eventTitle: string;
+            /** Format: uuid */
+            participantId?: string;
+            firstName?: string;
+            displayName?: string;
+            eventSlug?: string;
+            eventTitle?: string;
         };
-        EventTheme: {
-            eventTitle: string;
-            spouseNames: string[];
-            /** Format: date */
-            eventDate: string;
-            logoUrl?: string | null;
-            welcomeText?: string | null;
-            colors: {
-                primary: string;
-                secondary: string;
-                background: string;
-                accent: string;
-            };
-        };
-        InvitationPreview: {
-            firstName: string;
-            lastName: string;
+        InvitationStatusResponse: {
+            /** Format: uuid */
+            invitationId?: string;
             /** @enum {string} */
-            status: "VALID" | "REVOKED" | "ALREADY_USED" | "EXPIRED";
-        };
-        Session: {
-            /** @enum {string} */
-            actorType: "PARTICIPANT" | "STAFF";
-            role: components["schemas"]["Role"];
-            participant?: components["schemas"]["ParticipantSessionResponse"] | null;
-            staff?: components["schemas"]["StaffAccountResponse"] | null;
-        };
-        LobbyState: {
-            /** @enum {string} */
-            status: "CLOSED" | "OPEN" | "LOCKED";
-            connectedCount?: number | null;
-            message?: string | null;
-        };
-        ScreenState: {
-            theme: components["schemas"]["EventTheme"];
-            lobby: components["schemas"]["LobbyState"];
-        };
-        Participant: {
-            id: string;
-            firstName: string;
-            lastName: string;
-            active: boolean;
-            role: components["schemas"]["Role"];
-            /** @enum {string} */
-            invitationStatus: "NOT_GENERATED" | "VALID" | "REVOKED" | "ALREADY_USED" | "EXPIRED";
-        };
-        ParticipantInput: {
-            firstName: string;
-            lastName: string;
-            role?: components["schemas"]["Role"];
-        };
-        Invitation: {
-            /** @enum {string} */
-            status: "NOT_GENERATED" | "VALID" | "REVOKED" | "ALREADY_USED" | "EXPIRED";
-            qrAvailable?: boolean;
-        };
-        Exclusion: {
-            id: string;
-            participantAId: string;
-            participantBId: string;
-            /** @enum {string} */
-            type: "ABSOLUTE" | "PREFERENCE";
-            reason?: string | null;
-        };
-        ExclusionInput: {
-            participantAId: string;
-            participantBId: string;
-            /** @enum {string} */
-            type: "ABSOLUTE" | "PREFERENCE";
-            reason?: string | null;
-        };
-        Arrival: {
-            participantId: string;
-            firstName: string;
-            lastName: string;
+            status?: "ACTIVE" | "REVOKED";
+            fallbackCode?: string;
             /** Format: date-time */
-            arrivedAt: string;
-            late: boolean;
+            createdAt?: string;
         };
-        EventAdminConfig: {
-            id: string;
-            slug: string;
-            title: string;
-            language: string;
-            /** @enum {string} */
-            status: "DRAFT" | "OPEN" | "LIVE" | "CLOSED";
-            spouseOneName?: string | null;
-            spouseTwoName?: string | null;
-            /** Format: date */
-            eventDate?: string | null;
-            venueName?: string | null;
-            welcomeMessage?: string | null;
-            visualConfig: {
-                [key: string]: unknown;
-            };
-        };
-        EventAdminConfigInput: {
-            title: string;
-            spouseOneName?: string | null;
-            spouseTwoName?: string | null;
-            /** Format: date */
-            eventDate?: string | null;
-            venueName?: string | null;
-            welcomeMessage?: string | null;
-            visualConfig?: {
-                [key: string]: unknown;
-            } | null;
+        PairingCheckResponse: {
+            canPair?: boolean;
+            hasHardExclusion?: boolean;
         };
     };
     responses: never;
@@ -649,7 +1685,265 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getTheme: {
+    correct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                answerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerCorrectionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AnswerModerationResponse"];
+                };
+            };
+        };
+    };
+    getMyTeamAnswer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuizAnswerResponse"];
+                };
+            };
+        };
+    };
+    updateContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuizAnswerUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuizAnswerResponse"];
+                };
+            };
+        };
+    };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffAccountResponse"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffAccountUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffAccountResponse"];
+                };
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantResponse"];
+                };
+            };
+        };
+    };
+    update_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParticipantUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantResponse"];
+                };
+            };
+        };
+    };
+    delete_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EventPublicConfigResponse"];
+                };
+            };
+        };
+    };
+    update_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventConfigUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EventPublicConfigResponse"];
+                };
+            };
+        };
+    };
+    getCurrent: {
         parameters: {
             query?: never;
             header?: never;
@@ -664,74 +1958,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EventTheme"];
+                    "*/*": components["schemas"]["EventPublicConfigResponse"];
                 };
             };
         };
     };
-    resolveInvitation: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                token: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Invitation résolue */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InvitationResolveResponse"];
-                };
-            };
-            /** @description Jeton inconnu ou révoqué */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
-                };
-            };
-        };
-    };
-    confirmInvitation: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                token: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Session créée (cookie posé par le backend) */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Session"];
-                };
-            };
-            /** @description Jeton inconnu ou révoqué */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
-                };
-            };
-        };
-    };
-    confirmInvitationByCode: {
+    updateCurrent: {
         parameters: {
             query?: never;
             header?: never;
@@ -740,108 +1972,82 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    token?: string;
-                    code?: string;
-                };
+                "application/json": components["schemas"]["EventConfigUpdateRequest"];
             };
         };
         responses: {
-            /** @description Session créée (cookie posé par le backend) */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Session"];
-                };
-            };
-            /** @description Jeton devenu invalide entre la résolution et la confirmation */
-            410: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
+                    "*/*": components["schemas"]["EventPublicConfigResponse"];
                 };
             };
         };
     };
-    resolveFallbackCode: {
+    get_3: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameCharacterResponse"];
+                };
+            };
+        };
+    };
+    update_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": {
-                    code: string;
-                };
+                "application/json": components["schemas"]["GameCharacterUpdateRequest"];
             };
         };
         responses: {
-            /** @description Invitation résolue */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationPreview"];
-                };
-            };
-            /** @description Code inconnu */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
+                    "*/*": components["schemas"]["GameCharacterResponse"];
                 };
             };
         };
     };
-    getSession: {
+    delete_2: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Session active */
+            /** @description OK */
             200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Session"];
-                };
-            };
-            /** @description Aucune session active */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
-                };
-            };
-        };
-    };
-    closeSession: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Session fermée */
-            204: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -849,7 +2055,626 @@ export interface operations {
             };
         };
     };
-    staffLogin: {
+    vote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoteCastRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["VoteResponse"];
+                };
+            };
+        };
+    };
+    relaunchTeam: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+                teamId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AnswerModerationResponse"];
+                };
+            };
+        };
+    };
+    close: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionResponse"];
+                };
+            };
+        };
+    };
+    activate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionResponse"];
+                };
+            };
+        };
+    };
+    start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameResponse"];
+                };
+            };
+        };
+    };
+    resume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameResponse"];
+                };
+            };
+        };
+    };
+    pause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameResponse"];
+                };
+            };
+        };
+    };
+    nextQuestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameResponse"];
+                };
+            };
+        };
+    };
+    launch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeamResponse"][];
+                };
+            };
+        };
+    };
+    pairWith: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                participantId: string;
+                otherParticipantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeamResponse"];
+                };
+            };
+        };
+    };
+    joinTeam: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                participantId: string;
+                teamId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeamResponse"];
+                };
+            };
+        };
+    };
+    start_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyResponse"];
+                };
+            };
+        };
+    };
+    resume_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyResponse"];
+                };
+            };
+        };
+    };
+    pause_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyResponse"];
+                };
+            };
+        };
+    };
+    markLate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                participantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyParticipantResponse"];
+                };
+            };
+        };
+    };
+    admit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                participantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyParticipantResponse"];
+                };
+            };
+        };
+    };
+    open: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyResponse"];
+                };
+            };
+        };
+    };
+    lock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyResponse"];
+                };
+            };
+        };
+    };
+    finish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyResponse"];
+                };
+            };
+        };
+    };
+    close_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyResponse"];
+                };
+            };
+        };
+    };
+    hide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                answerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AnswerModerationResponse"];
+                };
+            };
+        };
+    };
+    accept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                answerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AnswerModerationResponse"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    takeControl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuizAnswerResponse"];
+                };
+            };
+        };
+    };
+    ready: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyHeartbeatResponse"];
+                };
+            };
+        };
+    };
+    heartbeat: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyHeartbeatResponse"];
+                };
+            };
+        };
+    };
+    confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantSessionResponse"];
+                };
+            };
+        };
+    };
+    confirm_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantSessionResponse"];
+                };
+            };
+        };
+    };
+    login: {
         parameters: {
             query?: never;
             header?: never;
@@ -862,31 +2687,987 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Connecté (cookie posé par le backend) */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StaffAccountResponse"];
+                    "*/*": components["schemas"]["StaffAccountResponse"];
                 };
             };
-            /** @description Requête invalide */
-            400: {
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
+                    "*/*": components["schemas"]["StaffAccountResponse"][];
                 };
             };
-            /** @description Identifiants invalides ou compte désactivé */
-            401: {
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffAccountCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
+                    "*/*": components["schemas"]["StaffAccountResponse"];
+                };
+            };
+        };
+    };
+    getStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                participantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InvitationStatusResponse"];
+                };
+            };
+        };
+    };
+    generateOrRegenerate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                participantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InvitationAdminResponse"];
+                };
+            };
+        };
+    };
+    revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                participantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    renewFallbackCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                participantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InvitationFallbackCodeResponse"];
+                };
+            };
+        };
+    };
+    disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantResponse"];
+                };
+            };
+        };
+    };
+    list_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionResponse"][];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionResponse"];
+                };
+            };
+        };
+    };
+    list_2: {
+        parameters: {
+            query?: {
+                status?: "INVITED" | "CONFIRMED" | "CONNECTED" | "PAUSED" | "ABSENT" | "DISABLED";
+                tableLabel?: string;
+                participantType?: "GUEST" | "SPOUSE" | "ORGANIZER";
+                query?: string;
+            };
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantResponse"][];
+                };
+            };
+        };
+    };
+    create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParticipantCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantResponse"];
+                };
+            };
+        };
+    };
+    generateBatchAndPrintSheet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InvitationBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+        };
+    };
+    preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantImportPreviewResponse"];
+                };
+            };
+        };
+    };
+    confirm_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParticipantImportConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantImportConfirmResponse"];
+                };
+            };
+        };
+    };
+    list_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameResponse"][];
+                };
+            };
+        };
+    };
+    create_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameResponse"];
+                };
+            };
+        };
+    };
+    list_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PairingExclusionResponse"][];
+                };
+            };
+        };
+    };
+    create_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PairingExclusionCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PairingExclusionResponse"];
+                };
+            };
+        };
+    };
+    list_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameCharacterResponse"][];
+                };
+            };
+        };
+    };
+    create_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameCharacterCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameCharacterResponse"];
+                };
+            };
+        };
+    };
+    deactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameCharacterResponse"];
+                };
+            };
+        };
+    };
+    activate_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameCharacterResponse"];
+                };
+            };
+        };
+    };
+    updateTable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParticipantTableUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantResponse"];
+                };
+            };
+        };
+    };
+    updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParticipantStatusUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ParticipantResponse"];
+                };
+            };
+        };
+    };
+    get_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PairingExclusionResponse"];
+                };
+            };
+        };
+    };
+    delete_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateReason: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PairingExclusionReasonUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PairingExclusionResponse"];
+                };
+            };
+        };
+    };
+    options: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["VotingOptionResponse"][];
+                };
+            };
+        };
+    };
+    getMyTeam: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MyTeamResponse"];
+                };
+            };
+        };
+    };
+    finalists: {
+        parameters: {
+            query?: {
+                revealVoteCount?: boolean;
+            };
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FinalistResponse"][];
+                };
+            };
+        };
+    };
+    list_6: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AnswerModerationResponse"][];
+                };
+            };
+        };
+    };
+    teams: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeamResponse"][];
+                };
+            };
+        };
+    };
+    getOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                participantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LatecomerOptionsResponse"];
+                };
+            };
+        };
+    };
+    participants: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyParticipantResponse"][];
+                };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SessionMeResponse"];
+                };
+            };
+        };
+    };
+    getStatus_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LobbyParticipantStatusResponse"];
+                };
+            };
+        };
+    };
+    resolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InvitationResolveResponse"];
+                };
+            };
+        };
+    };
+    resolve_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InvitationResolveResponse"];
+                };
+            };
+        };
+    };
+    getPublicConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EventPublicConfigResponse"];
+                };
+            };
+        };
+    };
+    get_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionResponse"];
+                };
+            };
+        };
+    };
+    get_6: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameResponse"];
+                };
+            };
+        };
+    };
+    export: {
+        parameters: {
+            query?: {
+                status?: "INVITED" | "CONFIRMED" | "CONNECTED" | "PAUSED" | "ABSENT" | "DISABLED";
+                tableLabel?: string;
+                participantType?: "GUEST" | "SPOUSE" | "ORGANIZER";
+                query?: string;
+            };
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
                 };
             };
         };
@@ -895,7 +3676,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                eventId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -906,91 +3689,21 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LobbyState"];
+                    "*/*": components["schemas"]["LobbyResponse"];
                 };
             };
         };
     };
-    getScreenState: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ScreenState"];
-                };
-            };
-        };
-    };
-    listParticipants: {
-        parameters: {
-            query?: {
-                search?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Participant"][];
-                };
-            };
-        };
-    };
-    createParticipant: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ParticipantInput"];
-            };
-        };
-        responses: {
-            /** @description Créé */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Participant"];
-                };
-            };
-        };
-    };
-    updateParticipant: {
+    participants_1: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                eventId: string;
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ParticipantInput"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -998,17 +3711,20 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Participant"];
+                    "*/*": components["schemas"]["LobbyParticipantResponse"][];
                 };
             };
         };
     };
-    disableParticipant: {
+    check: {
         parameters: {
-            query?: never;
+            query: {
+                participantAId: string;
+                participantBId: string;
+            };
             header?: never;
             path: {
-                id: string;
+                eventId: string;
             };
             cookie?: never;
         };
@@ -1020,393 +3736,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Participant"];
-                };
-            };
-        };
-    };
-    getParticipantInvitation: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Invitation"];
-                };
-            };
-        };
-    };
-    generateParticipantInvitation: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Invitation"];
-                };
-            };
-        };
-    };
-    regenerateParticipantInvitation: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Invitation"];
-                };
-            };
-        };
-    };
-    getParticipantInvitationQr: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Image PNG du QR */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/png": string;
-                };
-            };
-            /** @description QR non disponible */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
-                };
-            };
-        };
-    };
-    listExclusions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Exclusion"][];
-                };
-            };
-        };
-    };
-    createExclusion: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ExclusionInput"];
-            };
-        };
-        responses: {
-            /** @description Créée */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Exclusion"];
-                };
-            };
-        };
-    };
-    deleteExclusion: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Supprimée */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Suppression interdite (exclusion absolue) */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
-                };
-            };
-        };
-    };
-    getEventConfig: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EventAdminConfig"];
-                };
-            };
-        };
-    };
-    updateEventConfig: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EventAdminConfigInput"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EventAdminConfig"];
-                };
-            };
-            /** @description Requête invalide */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemDetail"];
-                };
-            };
-        };
-    };
-    listStaffAccounts: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffAccountResponse"][];
-                };
-            };
-        };
-    };
-    getAdminLobby: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LobbyState"];
-                };
-            };
-        };
-    };
-    getIntervenantLobby: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LobbyState"];
-                };
-            };
-        };
-    };
-    openLobby: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LobbyState"];
-                };
-            };
-        };
-    };
-    closeLobby: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LobbyState"];
-                };
-            };
-        };
-    };
-    lockLobby: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LobbyState"];
-                };
-            };
-        };
-    };
-    listRecentArrivals: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Arrival"][];
-                };
-            };
-        };
-    };
-    listLateArrivals: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        firstName: string;
-                        lastName: string;
-                    }[];
+                    "*/*": components["schemas"]["PairingCheckResponse"];
                 };
             };
         };

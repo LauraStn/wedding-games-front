@@ -14,14 +14,16 @@ import { ErrorPanel } from "../../../../components/ErrorPanel";
 import { EmptyState } from "../../../../components/EmptyState";
 import { StatusBadge } from "../../../../components/StatusBadge";
 import { readPref, writePref } from "../../../../lib/localPrefs";
-import type { Participant, ParticipantInput } from "../../../../features/admin/types";
+import type {
+  Participant,
+  ParticipantCreateInput,
+  ParticipantUpdateInput,
+} from "../../../../features/admin/types";
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Administrateur",
-  INTERVENANT: "Intervenant",
-  JURY: "Jury",
-  PARTICIPANT: "Participant",
-  PROJECTION: "Écran",
+const TYPE_LABELS: Record<string, string> = {
+  GUEST: "Invité",
+  SPOUSE: "Marié·e",
+  ORGANIZER: "Organisateur",
 };
 
 export default function AdminParticipantsPage() {
@@ -39,13 +41,13 @@ export default function AdminParticipantsPage() {
     writePref("admin-participants-search-draft", value);
   };
 
-  const onCreate = (input: ParticipantInput) => {
-    createParticipant.mutate(input, { onSuccess: () => setShowCreate(false) });
+  const onCreate = (input: ParticipantCreateInput | ParticipantUpdateInput) => {
+    createParticipant.mutate(input as ParticipantCreateInput, { onSuccess: () => setShowCreate(false) });
   };
 
-  const onUpdate = (input: ParticipantInput) => {
-    if (!selected) return;
-    updateParticipant.mutate({ id: selected.id, input });
+  const onUpdate = (input: ParticipantCreateInput | ParticipantUpdateInput) => {
+    if (!selected?.id) return;
+    updateParticipant.mutate({ id: selected.id, input: input as ParticipantUpdateInput });
   };
 
   return (
@@ -87,7 +89,7 @@ export default function AdminParticipantsPage() {
             <thead>
               <tr>
                 <th scope="col">Nom</th>
-                <th scope="col">Rôle</th>
+                <th scope="col">Type</th>
                 <th scope="col">État</th>
                 <th scope="col">
                   <span className="visually-hidden">Actions</span>
@@ -95,38 +97,44 @@ export default function AdminParticipantsPage() {
               </tr>
             </thead>
             <tbody>
-              {participantsQuery.data.map((participant) => (
-                <tr key={participant.id}>
-                  <td>
-                    <button
-                      type="button"
-                      className="link-button"
-                      onClick={() => {
-                        setSelected(participant);
-                        setShowCreate(false);
-                      }}
-                    >
-                      {participant.firstName} {participant.lastName}
-                    </button>
-                  </td>
-                  <td>{ROLE_LABELS[participant.role] ?? participant.role}</td>
-                  <td>
-                    <StatusBadge tone={participant.active ? "success" : "neutral"}>
-                      {participant.active ? "Actif" : "Désactivé"}
-                    </StatusBadge>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn btn--secondary btn--small"
-                      disabled={!participant.active || disableParticipant.isPending}
-                      onClick={() => disableParticipant.mutate(participant.id)}
-                    >
-                      Désactiver
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {participantsQuery.data.map((participant) => {
+                const isDisabled = participant.status === "DISABLED";
+                return (
+                  <tr key={participant.id}>
+                    <td>
+                      <button
+                        type="button"
+                        className="link-button"
+                        onClick={() => {
+                          setSelected(participant);
+                          setShowCreate(false);
+                        }}
+                      >
+                        {participant.firstName} {participant.lastName}
+                      </button>
+                    </td>
+                    <td>
+                      {(participant.participantType && TYPE_LABELS[participant.participantType]) ??
+                        participant.participantType}
+                    </td>
+                    <td>
+                      <StatusBadge tone={isDisabled ? "neutral" : "success"}>
+                        {isDisabled ? "Désactivé" : "Actif"}
+                      </StatusBadge>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn--secondary btn--small"
+                        disabled={isDisabled || !participant.id || disableParticipant.isPending}
+                        onClick={() => participant.id && disableParticipant.mutate(participant.id)}
+                      >
+                        Désactiver
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -147,7 +155,7 @@ export default function AdminParticipantsPage() {
           </div>
         )}
 
-        {selected && !showCreate && (
+        {selected?.id && !showCreate && (
           <div className="card">
             <h2>{selected.firstName} {selected.lastName}</h2>
             <ParticipantForm

@@ -1,9 +1,14 @@
-import { apiClient } from "../../api/client";
-import { unwrap } from "../../api/errors";
-import type { components } from "../../api/schema";
+import { fetchTheme, type EventTheme } from "../theme/api";
 
-export type ScreenState = components["schemas"]["ScreenState"];
+export interface ScreenState {
+  theme: EventTheme;
+}
 
+/**
+ * Pas d'endpoint agrégé de projection côté backend pour l'instant (voir ASST-139) :
+ * en attendant, seules les informations publiques de l'événement sont disponibles ici.
+ */
 export async function fetchScreenState(): Promise<ScreenState> {
-  return unwrap(apiClient.GET("/screen/state"));
+  const theme = await fetchTheme();
+  return { theme };
 }

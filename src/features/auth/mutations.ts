@@ -1,7 +1,13 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { confirmInvitation, resolveFallbackCode, resolveInvitation, staffLogin } from "./api";
+import {
+  confirmFallbackCode,
+  confirmInvitationToken,
+  resolveFallbackCode,
+  resolveInvitation,
+  staffLogin,
+} from "./api";
 import { useInvalidateSession } from "./useSession";
 
 export function useResolveInvitation() {
@@ -15,7 +21,15 @@ export function useResolveFallbackCode() {
 export function useConfirmInvitation() {
   const invalidateSession = useInvalidateSession();
   return useMutation({
-    mutationFn: confirmInvitation,
+    mutationFn: confirmInvitationToken,
+    onSuccess: () => invalidateSession(),
+  });
+}
+
+export function useConfirmFallbackCode() {
+  const invalidateSession = useInvalidateSession();
+  return useMutation({
+    mutationFn: confirmFallbackCode,
     onSuccess: () => invalidateSession(),
   });
 }

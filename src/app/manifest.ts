@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 import { fetchTheme } from "../features/theme/api";
 
-// /theme est un endpoint public (voir openapi/wedding-games.yaml) : il peut
-// être appelé côté serveur sans transmettre de cookie de session.
+// La configuration publique de l'événement (voir openapi/wedding-games.yaml) est
+// un endpoint public : il peut être appelé côté serveur sans transmettre de cookie de session.
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const theme = await fetchTheme().catch(() => null);
 
@@ -12,7 +12,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     description: "Weddup — l'application de jeux pour animer votre mariage",
     start_url: "/",
     display: "standalone",
-    background_color: theme?.colors.background ?? "#fafbff",
+    background_color: "#fafbff",
     theme_color: theme?.colors.primary ?? "#2457ff",
     lang: "fr",
     icons: [

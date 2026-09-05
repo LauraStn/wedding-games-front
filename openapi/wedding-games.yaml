@@ -1,299 +1,2253 @@
 openapi: 3.1.0
 info:
-  title: Wedding Games API (contrat provisoire)
-  version: 0.1.0-draft
-  description: >
-    Contrat OpenAPI provisoire, écrit côté frontend en l'absence du contrat
-    officiel exposé par le backend Spring Boot (dépôt games-app-back, vide au
-    moment de la rédaction). Il couvre uniquement le périmètre de la phase 1 :
-    navigation, identification par QR/code, salon, administration, pilotage
-    intervenant, jury et écran de projection. À REMPLACER par le contrat
-    généré par le backend dès qu'il sera disponible (voir README, section
-    "Génération du client OpenAPI").
+  title: Wedding Games API
+  description: >-
+    API du socle applicatif pour l'application privee d'animations de mariage (evenement, participants, invitations,
+    salon d'attente, exclusions).
+  contact:
+    name: Organisation du mariage
+  version: v1
 servers:
-  - url: /api/v1
-
+  - url: http://localhost:8081
+    description: Generated server url
+tags:
+  - name: Intervenant - Retardataires
+    description: Integration manuelle d'un retardataire dans une equipe compatible
+  - name: Admin - Questions
+    description: Configuration des questions d'une partie (reserve a l'administrateur)
+  - name: Admin - Participants
+    description: Gestion des participants (reserve a l'administrateur)
+  - name: Intervenant - Questions
+    description: Activation et fermeture d'une question
+  - name: Jury - Finalistes
+    description: Top 3 des reponses les plus votees (egalites incluses), transmis au jury
+  - name: Admin - Personnages
+    description: Catalogue de personnages (reserve a l'administrateur)
+  - name: Intervenant - Parties
+    description: Pilotage de la machine d'etat commune aux jeux
+  - name: Admin - Exclusions
+    description: Gestion des exclusions de matchmaking (reserve a l'administrateur)
+  - name: Quiz
+    description: 'Saisie d''equipe en direct: prise de main, transfert du controle, reponse synchronisee'
+  - name: Admin - Parties
+    description: Configuration des parties (reserve a l'administrateur)
+  - name: Session
+    description: Session courante (participant ou staff) portee par le cookie opaque
+  - name: Vote
+    description: Vote public sur les reponses acceptees d'une question, anonymise et sans auto-vote
+  - name: Evenement
+    description: Configuration publique de l'evenement
+  - name: Intervenant - Moderation quiz
+    description: Moderation des reponses avant projection, vote et jury
+  - name: Authentification staff
+    description: Connexion des membres de l'organisation (mot de passe BCrypt)
+  - name: Intervenant - Salon
+    description: Pilotage du salon d'attente (ouverture, fermeture, arrivees)
+  - name: Salon
+    description: Heartbeat de presence du participant dans le salon d'attente
+  - name: Equipe
+    description: Decouverte du personnage assigne et du binome/trio, une fois le matchmaking effectue
+  - name: Intervenant - Matchmaking
+    description: Generation des equipes a partir des participants presents
+  - name: Admin - Import participants
+    description: Import CSV/Excel des participants avec previsualisation
+  - name: Admin - Salon
+    description: Consultation du salon d'attente
+  - name: Invitations
+    description: Resolution et confirmation d'une invitation par code de secours (QR perdu ou illisible)
+  - name: Admin - Comptes staff
+    description: Gestion des comptes et roles de l'organisation
+  - name: Invitations
+    description: Resolution et confirmation d'une invitation par jeton opaque
+  - name: Admin - Evenement
+    description: Configuration de l'evenement (theme, textes, informations des maries)
+  - name: Admin - Invitations
+    description: Generation et regeneration des invitations (reserve a l'administrateur)
+paths:
+  /staff/answers/{answerId}/content:
+    put:
+      tags:
+        - Intervenant - Moderation quiz
+      summary: Corrige le contenu (faute de frappe, texte illisible) sans changer le sens
+      operationId: correct
+      parameters:
+        - name: answerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerCorrectionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AnswerModerationResponse'
+  /quiz/questions/{questionId}/answer:
+    get:
+      tags:
+        - Quiz
+      summary: Etat actuel de la reponse de mon equipe (poll pour suivre la saisie en direct)
+      operationId: getMyTeamAnswer
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/QuizAnswerResponse'
+    put:
+      tags:
+        - Quiz
+      summary: Met a jour le contenu de la reponse (reserve a celui qui a la main)
+      operationId: updateContent
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizAnswerUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/QuizAnswerResponse'
+  /admin/staff/{id}:
+    get:
+      tags:
+        - Admin - Comptes staff
+      operationId: get
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StaffAccountResponse'
+    put:
+      tags:
+        - Admin - Comptes staff
+      operationId: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffAccountUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StaffAccountResponse'
+    delete:
+      tags:
+        - Admin - Comptes staff
+      operationId: delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+  /admin/participants/{id}:
+    get:
+      tags:
+        - Admin - Participants
+      operationId: get_1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantResponse'
+    put:
+      tags:
+        - Admin - Participants
+      operationId: update_1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantResponse'
+    delete:
+      tags:
+        - Admin - Participants
+      operationId: delete_1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+  /admin/events/{eventId}:
+    get:
+      tags:
+        - Admin - Evenement
+      summary: Configuration d'un evenement donne (usage multi-evenements)
+      operationId: get_2
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/EventPublicConfigResponse'
+    put:
+      tags:
+        - Admin - Evenement
+      summary: Met a jour la configuration d'un evenement donne (usage multi-evenements)
+      operationId: update_2
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventConfigUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/EventPublicConfigResponse'
+  /admin/event:
+    get:
+      tags:
+        - Admin - Evenement
+      summary: Configuration de l'unique evenement de ce deploiement
+      operationId: getCurrent
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/EventPublicConfigResponse'
+    put:
+      tags:
+        - Admin - Evenement
+      summary: Met a jour la configuration de l'unique evenement de ce deploiement
+      operationId: updateCurrent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventConfigUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/EventPublicConfigResponse'
+  /admin/characters/{id}:
+    get:
+      tags:
+        - Admin - Personnages
+      operationId: get_3
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameCharacterResponse'
+    put:
+      tags:
+        - Admin - Personnages
+      operationId: update_3
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameCharacterUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameCharacterResponse'
+    delete:
+      tags:
+        - Admin - Personnages
+      operationId: delete_2
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+  /vote/questions/{questionId}:
+    post:
+      tags:
+        - Vote
+      summary: Vote pour une reponse (jamais celle de sa propre equipe, une seule fois par question)
+      operationId: vote
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteCastRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VoteResponse'
+  /staff/questions/{questionId}/teams/{teamId}/relaunch:
+    post:
+      tags:
+        - Intervenant - Moderation quiz
+      summary: 'Relance une equipe: reponse remise a vide, plus personne n''a la main'
+      operationId: relaunchTeam
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AnswerModerationResponse'
+  /staff/questions/{questionId}/close:
+    post:
+      tags:
+        - Intervenant - Questions
+      summary: 'Ferme la question (ACTIVE -> CLOSED): plus aucune modification de reponse n''est acceptee'
+      operationId: close
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/QuestionResponse'
+  /staff/questions/{questionId}/activate:
+    post:
+      tags:
+        - Intervenant - Questions
+      summary: 'Active la question (PENDING -> ACTIVE): les equipes peuvent desormais y repondre'
+      operationId: activate
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/QuestionResponse'
+  /staff/games/{gameId}/start:
+    post:
+      tags:
+        - Intervenant - Parties
+      summary: Demarre la partie (statut ACTIVE, phase PREPARATION)
+      operationId: start
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+  /staff/games/{gameId}/resume:
+    post:
+      tags:
+        - Intervenant - Parties
+      summary: Reprend une partie en pause, sur la meme phase
+      operationId: resume
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+  /staff/games/{gameId}/pause:
+    post:
+      tags:
+        - Intervenant - Parties
+      summary: Met la partie en pause, sans changer la phase en cours
+      operationId: pause
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+  /staff/games/{gameId}/next-question:
+    post:
+      tags:
+        - Intervenant - Parties
+      summary: Passe a la question suivante (phase QUESTION), depuis PREPARATION ou RESULT
+      operationId: nextQuestion
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+  /staff/events/{eventId}/matchmaking/launch:
+    post:
+      tags:
+        - Intervenant - Matchmaking
+      summary: Genere les equipes a partir des participants presents dans le salon
+      description: >-
+        Peut etre relance a volonte: les equipes precedentes sont remplacees. Echoue explicitement (409) si aucune
+        repartition ne respecte les exclusions absolues.
+      operationId: launch
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamResponse'
+  /staff/events/{eventId}/matchmaking/latecomers/{participantId}/pair-with/{otherParticipantId}:
+    post:
+      tags:
+        - Intervenant - Retardataires
+      summary: Forme un nouveau binome entre deux retardataires
+      operationId: pairWith
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: otherParticipantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+  /staff/events/{eventId}/matchmaking/latecomers/{participantId}/join-team/{teamId}:
+    post:
+      tags:
+        - Intervenant - Retardataires
+      summary: Integre le retardataire dans un binome existant, qui devient un trio
+      operationId: joinTeam
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+  /staff/events/{eventId}/lobby/start:
+    post:
+      tags:
+        - Intervenant - Salon
+      operationId: start_1
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyResponse'
+  /staff/events/{eventId}/lobby/resume:
+    post:
+      tags:
+        - Intervenant - Salon
+      operationId: resume_1
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyResponse'
+  /staff/events/{eventId}/lobby/pause:
+    post:
+      tags:
+        - Intervenant - Salon
+      operationId: pause_1
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyResponse'
+  /staff/events/{eventId}/lobby/participants/{participantId}/late:
+    post:
+      tags:
+        - Intervenant - Salon
+      operationId: markLate
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyParticipantResponse'
+  /staff/events/{eventId}/lobby/participants/{participantId}/admit:
+    post:
+      tags:
+        - Intervenant - Salon
+      operationId: admit
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyParticipantResponse'
+  /staff/events/{eventId}/lobby/open:
+    post:
+      tags:
+        - Intervenant - Salon
+      operationId: open
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyResponse'
+  /staff/events/{eventId}/lobby/lock:
+    post:
+      tags:
+        - Intervenant - Salon
+      operationId: lock
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyResponse'
+  /staff/events/{eventId}/lobby/finish:
+    post:
+      tags:
+        - Intervenant - Salon
+      operationId: finish
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyResponse'
+  /staff/events/{eventId}/lobby/close:
+    post:
+      tags:
+        - Intervenant - Salon
+      operationId: close_1
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyResponse'
+  /staff/answers/{answerId}/hide:
+    post:
+      tags:
+        - Intervenant - Moderation quiz
+      summary: 'Masque ou refuse la reponse: jamais projetee, ni transmise au vote/jury'
+      operationId: hide
+      parameters:
+        - name: answerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AnswerModerationResponse'
+  /staff/answers/{answerId}/accept:
+    post:
+      tags:
+        - Intervenant - Moderation quiz
+      summary: 'Accepte la reponse: eligible a la projection, au vote et au jury'
+      operationId: accept
+      parameters:
+        - name: answerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AnswerModerationResponse'
+  /session/logout:
+    post:
+      tags:
+        - Session
+      summary: Revoque la session courante et efface le cookie
+      operationId: logout
+      responses:
+        '200':
+          description: OK
+  /quiz/questions/{questionId}/answer/take-control:
+    post:
+      tags:
+        - Quiz
+      summary: 'Je prends la main: je deviens redacteur pour mon equipe'
+      description: >-
+        Peut aussi etre appele pour transferer le controle: le precedent redacteur passe en lecture seule, le contenu
+        deja saisi est conserve.
+      operationId: takeControl
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/QuizAnswerResponse'
+  /lobby/ready:
+    post:
+      tags:
+        - Salon
+      summary: Declare le participant courant pret, distinct d'une simple presence connectee
+      operationId: ready
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyHeartbeatResponse'
+  /lobby/heartbeat:
+    post:
+      tags:
+        - Salon
+      summary: Signale la presence du participant courant dans le salon (a appeler periodiquement)
+      operationId: heartbeat
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyHeartbeatResponse'
+  /invitations/{token}/confirm:
+    post:
+      tags:
+        - Invitations
+      summary: Confirme l'identite et ouvre une session participante opaque via cookie HttpOnly
+      operationId: confirm
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantSessionResponse'
+  /invitations/fallback/{code}/confirm:
+    post:
+      tags:
+        - Invitations
+      summary: Confirme l'identite via le code de secours et ouvre une session participante
+      operationId: confirm_1
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantSessionResponse'
+  /auth/staff/login:
+    post:
+      tags:
+        - Authentification staff
+      summary: Authentifie un membre de l'organisation et ouvre une session opaque via cookie HttpOnly
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffLoginRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StaffAccountResponse'
+  /admin/staff:
+    get:
+      tags:
+        - Admin - Comptes staff
+      operationId: list
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StaffAccountResponse'
+    post:
+      tags:
+        - Admin - Comptes staff
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffAccountCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StaffAccountResponse'
+  /admin/participants/{participantId}/invitation:
+    get:
+      tags:
+        - Admin - Invitations
+      summary: Consulte le statut de l'invitation active d'un participant (sans exposer le jeton)
+      operationId: getStatus
+      parameters:
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InvitationStatusResponse'
+    post:
+      tags:
+        - Admin - Invitations
+      summary: Genere une nouvelle invitation, invalidant l'ancien jeton actif s'il existait
+      description: Le jeton brut n'est retourne qu'une seule fois, dans cette reponse.
+      operationId: generateOrRegenerate
+      parameters:
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InvitationAdminResponse'
+  /admin/participants/{participantId}/invitation/revoke:
+    post:
+      tags:
+        - Admin - Invitations
+      summary: Revoque le jeton actif d'un participant sans en emettre un nouveau
+      description: >-
+        Utile pour un QR perdu ou compromis: coupe l'acces immediatement, sans reemission instantanee. L'administrateur
+        regenere plus tard via POST .../invitation s'il le souhaite.
+      operationId: revoke
+      parameters:
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+  /admin/participants/{participantId}/invitation/fallback-code/renew:
+    post:
+      tags:
+        - Admin - Invitations
+      summary: Renouvelle uniquement le code de secours, sans toucher au jeton QR actif
+      description: >-
+        Utile si le participant craint que son code ait ete vu par quelqu'un d'autre, sans avoir a rescanner un nouveau
+        QR.
+      operationId: renewFallbackCode
+      parameters:
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InvitationFallbackCodeResponse'
+  /admin/participants/{id}/disable:
+    post:
+      tags:
+        - Admin - Participants
+      operationId: disable
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantResponse'
+  /admin/games/{gameId}/questions:
+    get:
+      tags:
+        - Admin - Questions
+      operationId: list_1
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuestionResponse'
+    post:
+      tags:
+        - Admin - Questions
+      operationId: create_1
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/QuestionResponse'
+  /admin/events/{eventId}/participants:
+    get:
+      tags:
+        - Admin - Participants
+      operationId: list_2
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - INVITED
+              - CONFIRMED
+              - CONNECTED
+              - PAUSED
+              - ABSENT
+              - DISABLED
+        - name: tableLabel
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: participantType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - GUEST
+              - SPOUSE
+              - ORGANIZER
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParticipantResponse'
+    post:
+      tags:
+        - Admin - Participants
+      operationId: create_2
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantResponse'
+  /admin/events/{eventId}/participants/invitations/batch:
+    post:
+      tags:
+        - Admin - Invitations
+      summary: >-
+        Genere (ou regenere) une invitation pour tout ou partie des participants de l'evenement, et retourne directement
+        la planche d'impression PDF des QR
+      description: >-
+        Les jetons bruts ne sont jamais retournes en JSON: ils n'existent que le temps de produire les QR de cette
+        planche, puis disparaissent definitivement.
+      operationId: generateBatchAndPrintSheet
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationBatchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: byte
+  /admin/events/{eventId}/participants/import/preview:
+    post:
+      tags:
+        - Admin - Import participants
+      operationId: preview
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantImportPreviewResponse'
+  /admin/events/{eventId}/participants/import/confirm:
+    post:
+      tags:
+        - Admin - Import participants
+      operationId: confirm_2
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantImportConfirmRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantImportConfirmResponse'
+  /admin/events/{eventId}/games:
+    get:
+      tags:
+        - Admin - Parties
+      operationId: list_3
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameResponse'
+    post:
+      tags:
+        - Admin - Parties
+      operationId: create_3
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+  /admin/events/{eventId}/exclusions:
+    get:
+      tags:
+        - Admin - Exclusions
+      operationId: list_4
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PairingExclusionResponse'
+    post:
+      tags:
+        - Admin - Exclusions
+      operationId: create_4
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PairingExclusionCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PairingExclusionResponse'
+  /admin/events/{eventId}/characters:
+    get:
+      tags:
+        - Admin - Personnages
+      operationId: list_5
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameCharacterResponse'
+    post:
+      tags:
+        - Admin - Personnages
+      operationId: create_5
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameCharacterCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameCharacterResponse'
+  /admin/characters/{id}/deactivate:
+    post:
+      tags:
+        - Admin - Personnages
+      operationId: deactivate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameCharacterResponse'
+  /admin/characters/{id}/activate:
+    post:
+      tags:
+        - Admin - Personnages
+      operationId: activate_1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameCharacterResponse'
+  /admin/participants/{id}/table:
+    patch:
+      tags:
+        - Admin - Participants
+      operationId: updateTable
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantTableUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantResponse'
+  /admin/participants/{id}/status:
+    patch:
+      tags:
+        - Admin - Participants
+      operationId: updateStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantStatusUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ParticipantResponse'
+  /admin/exclusions/{id}:
+    get:
+      tags:
+        - Admin - Exclusions
+      operationId: get_4
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PairingExclusionResponse'
+    delete:
+      tags:
+        - Admin - Exclusions
+      operationId: delete_3
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+    patch:
+      tags:
+        - Admin - Exclusions
+      operationId: updateReason
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PairingExclusionReasonUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PairingExclusionResponse'
+  /vote/questions/{questionId}/options:
+    get:
+      tags:
+        - Vote
+      summary: Options de vote pour cette question
+      description: >-
+        Reponses acceptees uniquement, ordre aleatoire, jamais la reponse de ma propre equipe, sans nom ni personnage
+        visible.
+      operationId: options
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VotingOptionResponse'
+  /team/me:
+    get:
+      tags:
+        - Equipe
+      summary: Mon personnage assigne et celui de mon/mes partenaire(s) de binome/trio
+      operationId: getMyTeam
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MyTeamResponse'
+  /staff/questions/{questionId}/finalists:
+    get:
+      tags:
+        - Jury - Finalistes
+      summary: Finalistes du top 3 (jusqu'a 4+ en cas d'egalite, jamais de tirage au sort eliminant une egalite)
+      description: >-
+        Le nombre de votes est masque par defaut (revealVoteCount=false) pour ne pas influencer le jugement du jury;
+        passer revealVoteCount=true pour l'afficher.
+      operationId: finalists
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: revealVoteCount
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FinalistResponse'
+  /staff/questions/{questionId}/answers:
+    get:
+      tags:
+        - Intervenant - Moderation quiz
+      summary: Liste toutes les reponses d'une question pour moderation (y compris masquees)
+      operationId: list_6
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnswerModerationResponse'
+  /staff/events/{eventId}/matchmaking/teams:
+    get:
+      tags:
+        - Intervenant - Matchmaking
+      summary: Consulte les equipes actuelles sans relancer le matchmaking
+      operationId: teams
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamResponse'
+  /staff/events/{eventId}/matchmaking/latecomers/{participantId}/options:
+    get:
+      tags:
+        - Intervenant - Retardataires
+      summary: >-
+        Equipes compatibles (deviendraient un trio) et autres retardataires compatibles (formeraient un nouveau binome),
+        en respectant les exclusions absolues
+      operationId: getOptions
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LatecomerOptionsResponse'
+  /staff/events/{eventId}/lobby/participants:
+    get:
+      tags:
+        - Intervenant - Salon
+      operationId: participants
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LobbyParticipantResponse'
+  /session/me:
+    get:
+      tags:
+        - Session
+      summary: Retourne l'identite, le role et - pour un participant - les points/victoires a jour
+      operationId: me
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SessionMeResponse'
+  /lobby:
+    get:
+      tags:
+        - Salon
+      summary: Etat du salon adapte au participant (statut, nombre de presents, consignes)
+      operationId: getStatus_1
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyParticipantStatusResponse'
+  /invitations/{token}/resolve:
+    get:
+      tags:
+        - Invitations
+      summary: Resout un jeton d'invitation en identite a faire confirmer par l'invite
+      operationId: resolve
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InvitationResolveResponse'
+  /invitations/fallback/{code}/resolve:
+    get:
+      tags:
+        - Invitations
+      summary: Resout un code de secours en identite a faire confirmer par l'invite
+      operationId: resolve_1
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InvitationResolveResponse'
+  /events/{slug}/public:
+    get:
+      tags:
+        - Evenement
+      summary: Recupere la configuration publique (non sensible) de l'evenement
+      operationId: getPublicConfig
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/EventPublicConfigResponse'
+  /admin/questions/{id}:
+    get:
+      tags:
+        - Admin - Questions
+      operationId: get_5
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/QuestionResponse'
+  /admin/games/{id}:
+    get:
+      tags:
+        - Admin - Parties
+      operationId: get_6
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+  /admin/events/{eventId}/participants/export:
+    get:
+      tags:
+        - Admin - Participants
+      operationId: export
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - INVITED
+              - CONFIRMED
+              - CONNECTED
+              - PAUSED
+              - ABSENT
+              - DISABLED
+        - name: tableLabel
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: participantType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - GUEST
+              - SPOUSE
+              - ORGANIZER
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+  /admin/events/{eventId}/lobby:
+    get:
+      tags:
+        - Admin - Salon
+      operationId: getLobby
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LobbyResponse'
+  /admin/events/{eventId}/lobby/participants:
+    get:
+      tags:
+        - Admin - Salon
+      operationId: participants_1
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LobbyParticipantResponse'
+  /admin/events/{eventId}/exclusions/check:
+    get:
+      tags:
+        - Admin - Exclusions
+      operationId: check
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantAId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantBId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PairingCheckResponse'
 components:
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: WEDDING_SESSION
-
   schemas:
-    Role:
-      type: string
-      enum: [ADMIN, INTERVENANT, JURY, PARTICIPANT, PROJECTION]
-
-    ProblemDetail:
+    AnswerCorrectionRequest:
       type: object
-      required: [code, message, status]
       properties:
-        code:
+        content:
           type: string
-          description: Code d'erreur métier stable (ex. INVALID_CREDENTIALS)
-        message:
-          type: string
-        status:
-          type: integer
-        path:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        details:
-          type: array
-          items:
-            type: object
-            properties:
-              field:
-                type: string
-              message:
-                type: string
-
-    StaffAccountResponse:
+          maxLength: 1000
+          minLength: 0
+      required:
+        - content
+    AnswerModerationResponse:
       type: object
-      required: [id, username, displayName, role, active, createdAt]
       properties:
         id:
           type: string
+          format: uuid
+        questionId:
+          type: string
+          format: uuid
+        teamId:
+          type: string
+          format: uuid
+        teamLabel:
+          type: string
+        content:
+          type: string
+        moderationStatus:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - HIDDEN
+        controllingParticipantId:
+          type: string
+          format: uuid
+        lastEditedAt:
+          type: string
+          format: date-time
+    QuizAnswerUpdateRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          maxLength: 1000
+          minLength: 0
+      required:
+        - content
+    QuizAnswerResponse:
+      type: object
+      properties:
+        questionId:
+          type: string
+          format: uuid
+        teamId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        controllingParticipantId:
+          type: string
+          format: uuid
+        controllingParticipantName:
+          type: string
+        lastEditedAt:
+          type: string
+          format: date-time
+    StaffAccountUpdateRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+          maxLength: 150
+          minLength: 0
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - INTERVENANT
+            - JURY
+            - PROJECTION
+        active:
+          type: boolean
+        password:
+          type: string
+          maxLength: 200
+          minLength: 8
+      required:
+        - displayName
+        - role
+    StaffAccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
         username:
           type: string
         displayName:
           type: string
         role:
-          $ref: '#/components/schemas/Role'
+          type: string
+          enum:
+            - ADMIN
+            - INTERVENANT
+            - JURY
+            - PROJECTION
         active:
           type: boolean
         createdAt:
           type: string
           format: date-time
-
-    StaffLoginRequest:
+    ParticipantUpdateRequest:
       type: object
-      required: [username, password]
       properties:
-        username:
-          type: string
-        password:
-          type: string
-
-    ParticipantSessionResponse:
-      type: object
-      required: [participantId, eventId, eventSlug, firstName, displayName, status, totalPoints, totalWins]
-      properties:
-        participantId:
-          type: string
-        eventId:
-          type: string
-        eventSlug:
-          type: string
         firstName:
           type: string
+          maxLength: 100
+          minLength: 0
+        lastName:
+          type: string
+          maxLength: 100
+          minLength: 0
         displayName:
           type: string
+          maxLength: 150
+          minLength: 0
+        tableLabel:
+          type: string
+          maxLength: 50
+          minLength: 0
+        participantType:
+          type: string
+          enum:
+            - GUEST
+            - SPOUSE
+            - ORGANIZER
         status:
           type: string
-        totalPoints:
-          type: integer
-        totalWins:
-          type: integer
-
-    InvitationResolveResponse:
-      type: object
-      required: [participantId, firstName, displayName, eventSlug, eventTitle]
-      properties:
-        participantId:
+          enum:
+            - INVITED
+            - CONFIRMED
+            - CONNECTED
+            - PAUSED
+            - ABSENT
+            - DISABLED
+        gender:
           type: string
+          enum:
+            - MALE
+            - FEMALE
+      required:
+        - displayName
+        - firstName
+        - lastName
+        - participantType
+        - status
+    ParticipantResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
         firstName:
+          type: string
+        lastName:
           type: string
         displayName:
           type: string
-        eventSlug:
+        tableLabel:
           type: string
-        eventTitle:
+        participantType:
           type: string
-
-    EventTheme:
+          enum:
+            - GUEST
+            - SPOUSE
+            - ORGANIZER
+        status:
+          type: string
+          enum:
+            - INVITED
+            - CONFIRMED
+            - CONNECTED
+            - PAUSED
+            - ABSENT
+            - DISABLED
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+        totalPoints:
+          type: integer
+          format: int32
+        totalWins:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    EventConfigUpdateRequest:
       type: object
-      required: [eventTitle, spouseNames, eventDate, colors]
       properties:
-        eventTitle:
+        title:
           type: string
-        spouseNames:
-          type: array
-          items:
-            type: string
-          minItems: 2
-          maxItems: 2
+          maxLength: 200
+          minLength: 0
+        spouseOneName:
+          type: string
+          maxLength: 150
+          minLength: 0
+        spouseTwoName:
+          type: string
+          maxLength: 150
+          minLength: 0
         eventDate:
           type: string
           format: date
-        logoUrl:
+        venueName:
           type: string
-          nullable: true
-        welcomeText:
+          maxLength: 200
+          minLength: 0
+        welcomeMessage:
           type: string
-          nullable: true
-        colors:
+          maxLength: 2000
+          minLength: 0
+        visualConfig:
           type: object
-          required: [primary, secondary, background, accent]
-          properties:
-            primary:
-              type: string
-            secondary:
-              type: string
-            background:
-              type: string
-            accent:
-              type: string
-
-    InvitationPreview:
+          additionalProperties: {}
+      required:
+        - title
+    EventPublicConfigResponse:
       type: object
-      required: [firstName, lastName, status]
-      properties:
-        firstName:
-          type: string
-        lastName:
-          type: string
-        status:
-          type: string
-          enum: [VALID, REVOKED, ALREADY_USED, EXPIRED]
-
-    Session:
-      type: object
-      required: [actorType, role]
-      properties:
-        actorType:
-          type: string
-          enum: [PARTICIPANT, STAFF]
-        role:
-          $ref: '#/components/schemas/Role'
-        participant:
-          allOf:
-            - $ref: '#/components/schemas/ParticipantSessionResponse'
-          nullable: true
-        staff:
-          allOf:
-            - $ref: '#/components/schemas/StaffAccountResponse'
-          nullable: true
-
-    LobbyState:
-      type: object
-      required: [status]
-      properties:
-        status:
-          type: string
-          enum: [CLOSED, OPEN, LOCKED]
-        connectedCount:
-          type: integer
-          nullable: true
-        message:
-          type: string
-          nullable: true
-
-    ScreenState:
-      type: object
-      required: [theme, lobby]
-      properties:
-        theme:
-          $ref: '#/components/schemas/EventTheme'
-        lobby:
-          $ref: '#/components/schemas/LobbyState'
-
-    Participant:
-      type: object
-      required: [id, firstName, lastName, active, role, invitationStatus]
       properties:
         id:
           type: string
-        firstName:
-          type: string
-        lastName:
-          type: string
-        active:
-          type: boolean
-        role:
-          $ref: '#/components/schemas/Role'
-        invitationStatus:
-          type: string
-          enum: [NOT_GENERATED, VALID, REVOKED, ALREADY_USED, EXPIRED]
-
-    ParticipantInput:
-      type: object
-      required: [firstName, lastName]
-      properties:
-        firstName:
-          type: string
-        lastName:
-          type: string
-        role:
-          $ref: '#/components/schemas/Role'
-
-    Invitation:
-      type: object
-      required: [status]
-      properties:
-        status:
-          type: string
-          enum: [NOT_GENERATED, VALID, REVOKED, ALREADY_USED, EXPIRED]
-        qrAvailable:
-          type: boolean
-
-    Exclusion:
-      type: object
-      required: [id, participantAId, participantBId, type]
-      properties:
-        id:
-          type: string
-        participantAId:
-          type: string
-        participantBId:
-          type: string
-        type:
-          type: string
-          enum: [ABSOLUTE, PREFERENCE]
-        reason:
-          type: string
-          nullable: true
-
-    ExclusionInput:
-      type: object
-      required: [participantAId, participantBId, type]
-      properties:
-        participantAId:
-          type: string
-        participantBId:
-          type: string
-        type:
-          type: string
-          enum: [ABSOLUTE, PREFERENCE]
-        reason:
-          type: string
-          nullable: true
-
-    Arrival:
-      type: object
-      required: [participantId, firstName, lastName, arrivedAt, late]
-      properties:
-        participantId:
-          type: string
-        firstName:
-          type: string
-        lastName:
-          type: string
-        arrivedAt:
-          type: string
-          format: date-time
-        late:
-          type: boolean
-
-    EventAdminConfig:
-      type: object
-      required: [id, slug, title, language, status, visualConfig]
-      properties:
-        id:
-          type: string
+          format: uuid
         slug:
           type: string
         title:
@@ -302,624 +2256,753 @@ components:
           type: string
         status:
           type: string
-          enum: [DRAFT, OPEN, LIVE, CLOSED]
+          enum:
+            - DRAFT
+            - OPEN
+            - LIVE
+            - CLOSED
         spouseOneName:
           type: string
-          nullable: true
         spouseTwoName:
           type: string
-          nullable: true
         eventDate:
           type: string
           format: date
-          nullable: true
         venueName:
           type: string
-          nullable: true
         welcomeMessage:
           type: string
-          nullable: true
         visualConfig:
           type: object
-          additionalProperties: true
-
-    EventAdminConfigInput:
+          additionalProperties: {}
+    GameCharacterUpdateRequest:
       type: object
-      required: [title]
       properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+        avatarUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+      required:
+        - name
+    GameCharacterResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        avatarUrl:
+          type: string
+        active:
+          type: boolean
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    VoteCastRequest:
+      type: object
+      properties:
+        answerId:
+          type: string
+          format: uuid
+      required:
+        - answerId
+    VoteResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        questionId:
+          type: string
+          format: uuid
+        answerId:
+          type: string
+          format: uuid
+    QuestionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        gameId:
+          type: string
+          format: uuid
+        prompt:
+          type: string
+        sequence:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACTIVE
+            - CLOSED
+        source:
+          type: string
+          enum:
+            - ADMIN
+            - GUEST
+    GameResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+            - QUIZ
+            - LUI_OU_ELLE
+            - BLIND_TEST
+            - CUSTOM
         title:
           type: string
-        spouseOneName:
+        sequence:
+          type: integer
+          format: int32
+        status:
           type: string
-          nullable: true
-        spouseTwoName:
+          enum:
+            - DRAFT
+            - READY
+            - ACTIVE
+            - PAUSED
+            - FINISHED
+        phase:
           type: string
-          nullable: true
-        eventDate:
+          enum:
+            - LOBBY
+            - PREPARATION
+            - QUESTION
+            - ANSWERS_CLOSED
+            - VOTE
+            - JURY
+            - RESULT
+    TeamMemberResponse:
+      type: object
+      properties:
+        participantId:
           type: string
-          format: date
-          nullable: true
-        venueName:
+          format: uuid
+        displayName:
           type: string
-          nullable: true
+        characterId:
+          type: string
+          format: uuid
+        characterName:
+          type: string
+    TeamResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamMemberResponse'
+    LobbyResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - CLOSED
+            - OPEN
+            - LOCKED
+            - ACTIVE
+            - PAUSED
+            - FINISHED
+        openedAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+    LobbyParticipantResponse:
+      type: object
+      properties:
+        participantId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        connectionStatus:
+          type: string
+          enum:
+            - CONNECTED
+            - DISCONNECTED
+            - LATE
+            - READY
+        arrivedAt:
+          type: string
+          format: date-time
+        lastActivityAt:
+          type: string
+          format: date-time
+        possibleDuplicate:
+          type: boolean
+        possibleQrReuse:
+          type: boolean
+    LobbyHeartbeatResponse:
+      type: object
+      properties:
+        connectionStatus:
+          type: string
+          enum:
+            - CONNECTED
+            - DISCONNECTED
+            - LATE
+            - READY
+        lastActivityAt:
+          type: string
+          format: date-time
+    ParticipantSessionResponse:
+      type: object
+      properties:
+        participantId:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
+        eventSlug:
+          type: string
+        firstName:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+          enum:
+            - INVITED
+            - CONFIRMED
+            - CONNECTED
+            - PAUSED
+            - ABSENT
+            - DISABLED
+        totalPoints:
+          type: integer
+          format: int32
+        totalWins:
+          type: integer
+          format: int32
+    StaffLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+        - password
+        - username
+    StaffAccountCreateRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 100
+          minLength: 0
+        password:
+          type: string
+          maxLength: 200
+          minLength: 8
+        displayName:
+          type: string
+          maxLength: 150
+          minLength: 0
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - INTERVENANT
+            - JURY
+            - PROJECTION
+      required:
+        - displayName
+        - password
+        - role
+        - username
+    InvitationAdminResponse:
+      type: object
+      properties:
+        invitationId:
+          type: string
+          format: uuid
+        participantId:
+          type: string
+          format: uuid
+        rawToken:
+          type: string
+        invitationUrl:
+          type: string
+        fallbackCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    InvitationFallbackCodeResponse:
+      type: object
+      properties:
+        fallbackCode:
+          type: string
+    QuestionCreateRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+          maxLength: 1000
+          minLength: 0
+        sequence:
+          type: integer
+          format: int32
+      required:
+        - prompt
+    ParticipantCreateRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        lastName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        displayName:
+          type: string
+          maxLength: 150
+          minLength: 0
+        tableLabel:
+          type: string
+          maxLength: 50
+          minLength: 0
+        participantType:
+          type: string
+          enum:
+            - GUEST
+            - SPOUSE
+            - ORGANIZER
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+      required:
+        - displayName
+        - firstName
+        - lastName
+        - participantType
+    InvitationBatchRequest:
+      type: object
+      properties:
+        participantIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    ParticipantImportPreviewResponse:
+      type: object
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParticipantImportRow'
+        totalRows:
+          type: integer
+          format: int32
+        validCount:
+          type: integer
+          format: int32
+        duplicateCount:
+          type: integer
+          format: int32
+        rejectedCount:
+          type: integer
+          format: int32
+    ParticipantImportRow:
+      type: object
+      properties:
+        rowNumber:
+          type: integer
+          format: int32
+        firstName:
+          type: string
+        lastName:
+          type: string
+        displayName:
+          type: string
+        tableLabel:
+          type: string
+        participantType:
+          type: string
+          enum:
+            - GUEST
+            - SPOUSE
+            - ORGANIZER
+        status:
+          type: string
+          enum:
+            - VALID
+            - DUPLICATE_IN_FILE
+            - DUPLICATE_EXISTING
+            - REJECTED
+        rejectionReason:
+          type: string
+    ParticipantImportConfirmRequest:
+      type: object
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParticipantImportRowInput'
+          minItems: 1
+      required:
+        - rows
+    ParticipantImportRowInput:
+      type: object
+      properties:
+        firstName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        lastName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        displayName:
+          type: string
+          maxLength: 150
+          minLength: 0
+        tableLabel:
+          type: string
+          maxLength: 50
+          minLength: 0
+        participantType:
+          type: string
+          enum:
+            - GUEST
+            - SPOUSE
+            - ORGANIZER
+      required:
+        - displayName
+        - firstName
+        - lastName
+        - participantType
+    ParticipantImportConfirmResponse:
+      type: object
+      properties:
+        created:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParticipantResponse'
+        createdCount:
+          type: integer
+          format: int32
+    GameCreateRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - QUIZ
+            - LUI_OU_ELLE
+            - BLIND_TEST
+            - CUSTOM
+        title:
+          type: string
+          maxLength: 200
+          minLength: 0
+        sequence:
+          type: integer
+          format: int32
+      required:
+        - title
+        - type
+    PairingExclusionCreateRequest:
+      type: object
+      properties:
+        participantAId:
+          type: string
+          format: uuid
+        participantBId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          maxLength: 300
+          minLength: 0
+        exclusionType:
+          type: string
+          enum:
+            - HARD
+            - PREFERENCE
+      required:
+        - exclusionType
+        - participantAId
+        - participantBId
+    PairingExclusionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
+        participantAId:
+          type: string
+          format: uuid
+        participantBId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        exclusionType:
+          type: string
+          enum:
+            - HARD
+            - PREFERENCE
+        locked:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    GameCharacterCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+        avatarUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+      required:
+        - name
+    ParticipantTableUpdateRequest:
+      type: object
+      properties:
+        tableLabel:
+          type: string
+          maxLength: 50
+          minLength: 0
+    ParticipantStatusUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - INVITED
+            - CONFIRMED
+            - CONNECTED
+            - PAUSED
+            - ABSENT
+            - DISABLED
+      required:
+        - status
+    PairingExclusionReasonUpdateRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 300
+          minLength: 0
+    VotingOptionResponse:
+      type: object
+      properties:
+        answerId:
+          type: string
+          format: uuid
+        content:
+          type: string
+    MyTeamResponse:
+      type: object
+      properties:
+        teamId:
+          type: string
+          format: uuid
+        myCharacterId:
+          type: string
+          format: uuid
+        myCharacterName:
+          type: string
+        myCharacterAvatarUrl:
+          type: string
+        myCharacterDescription:
+          type: string
+        partners:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeammateResponse'
+    TeammateResponse:
+      type: object
+      properties:
+        participantId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        characterId:
+          type: string
+          format: uuid
+        characterName:
+          type: string
+        characterAvatarUrl:
+          type: string
+    FinalistResponse:
+      type: object
+      properties:
+        answerId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        voteCount:
+          type: integer
+          format: int64
+    LatecomerCandidateResponse:
+      type: object
+      properties:
+        participantId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+    LatecomerOptionsResponse:
+      type: object
+      properties:
+        compatibleTeams:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamResponse'
+        compatibleLatecomers:
+          type: array
+          items:
+            $ref: '#/components/schemas/LatecomerCandidateResponse'
+    SessionMeResponse:
+      type: object
+      properties:
+        actorType:
+          type: string
+          enum:
+            - PARTICIPANT
+            - STAFF
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - INTERVENANT
+            - JURY
+            - PARTICIPANT
+            - PROJECTION
+        participant:
+          $ref: '#/components/schemas/ParticipantSessionResponse'
+        staff:
+          $ref: '#/components/schemas/StaffAccountResponse'
+    LobbyParticipantStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - CLOSED
+            - OPEN
+            - LOCKED
+            - ACTIVE
+            - PAUSED
+            - FINISHED
+        presentCount:
+          type: integer
+          format: int64
         welcomeMessage:
           type: string
-          nullable: true
-        visualConfig:
-          type: object
-          additionalProperties: true
-          nullable: true
-
-paths:
-  /theme:
-    get:
-      operationId: getTheme
-      summary: Configuration visuelle et textuelle de l'événement
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EventTheme'
-
-  /invitations/{token}/resolve:
-    get:
-      operationId: resolveInvitation
-      summary: Résout un jeton d'invitation (issu du QR personnel), sans ouvrir de session
-      parameters:
-        - name: token
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Invitation résolue
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvitationResolveResponse'
-        '404':
-          description: Jeton inconnu ou révoqué
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-
-  /invitations/{token}/confirm:
-    post:
-      operationId: confirmInvitation
-      summary: Confirme l'identité et ouvre la session participant
-      parameters:
-        - name: token
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Session créée (cookie posé par le backend)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Session'
-        '404':
-          description: Jeton inconnu ou révoqué
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-
-  /invitations/confirm:
-    post:
-      operationId: confirmInvitationByCode
-      summary: >
-        (Provisoire, non supporté par le backend) Confirme l'identité à
-        partir d'un code de secours résolu via /invitations/fallback. Conservé
-        tel quel en attendant une décision produit — voir le plan
-        "Réaligner l'auth sur le vrai backend".
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                token:
-                  type: string
-                code:
-                  type: string
-      responses:
-        '200':
-          description: Session créée (cookie posé par le backend)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Session'
-        '410':
-          description: Jeton devenu invalide entre la résolution et la confirmation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-
-  /invitations/fallback:
-    post:
-      operationId: resolveFallbackCode
-      summary: Résout un code d'invitation de secours saisi manuellement
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [code]
-              properties:
-                code:
-                  type: string
-      responses:
-        '200':
-          description: Invitation résolue
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvitationPreview'
-        '404':
-          description: Code inconnu
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-
-  /session/me:
-    get:
-      operationId: getSession
-      summary: Session active (restauration après rechargement)
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: Session active
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Session'
-        '401':
-          description: Aucune session active
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-
-  /session/logout:
-    post:
-      operationId: closeSession
-      summary: Ferme la session courante (idempotent)
-      security: [{ cookieAuth: [] }]
-      responses:
-        '204':
-          description: Session fermée
-
-  /auth/staff/login:
-    post:
-      operationId: staffLogin
-      summary: Authentifie un membre du staff et pose le cookie de session
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StaffLoginRequest'
-      responses:
-        '200':
-          description: Connecté (cookie posé par le backend)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StaffAccountResponse'
-        '401':
-          description: Identifiants invalides ou compte désactivé
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-        '400':
-          description: Requête invalide
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-
-  /lobby:
-    get:
-      operationId: getLobby
-      summary: État du salon (participant)
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LobbyState'
-
-  /screen/state:
-    get:
-      operationId: getScreenState
-      summary: État public destiné à l'écran de projection
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScreenState'
-
-  /admin/participants:
-    get:
-      operationId: listParticipants
-      summary: Liste et recherche des participants
-      security: [{ cookieAuth: [] }]
-      parameters:
-        - name: search
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Participant'
-    post:
-      operationId: createParticipant
-      summary: Ajoute un participant
-      security: [{ cookieAuth: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ParticipantInput'
-      responses:
-        '201':
-          description: Créé
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Participant'
-
-  /admin/participants/{id}:
-    patch:
-      operationId: updateParticipant
-      summary: Modifie un participant
-      security: [{ cookieAuth: [] }]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ParticipantInput'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Participant'
-
-  /admin/participants/{id}/disable:
-    post:
-      operationId: disableParticipant
-      summary: Désactive un participant
-      security: [{ cookieAuth: [] }]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Participant'
-
-  /admin/participants/{id}/invitation:
-    get:
-      operationId: getParticipantInvitation
-      summary: Statut de l'invitation d'un participant
-      security: [{ cookieAuth: [] }]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Invitation'
-
-  /admin/participants/{id}/invitation/generate:
-    post:
-      operationId: generateParticipantInvitation
-      summary: Génère l'invitation d'un participant
-      security: [{ cookieAuth: [] }]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Invitation'
-
-  /admin/participants/{id}/invitation/regenerate:
-    post:
-      operationId: regenerateParticipantInvitation
-      summary: Régénère l'invitation d'un participant (invalide l'ancien jeton)
-      security: [{ cookieAuth: [] }]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Invitation'
-
-  /admin/participants/{id}/invitation/qr:
-    get:
-      operationId: getParticipantInvitationQr
-      summary: Image QR de l'invitation (si disponible)
-      security: [{ cookieAuth: [] }]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Image PNG du QR
-          content:
-            image/png:
-              schema:
-                type: string
-                format: binary
-        '404':
-          description: QR non disponible
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-
-  /admin/exclusions:
-    get:
-      operationId: listExclusions
-      summary: Liste des exclusions
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Exclusion'
-    post:
-      operationId: createExclusion
-      summary: Crée une exclusion
-      security: [{ cookieAuth: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExclusionInput'
-      responses:
-        '201':
-          description: Créée
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Exclusion'
-
-  /admin/exclusions/{id}:
-    delete:
-      operationId: deleteExclusion
-      summary: Supprime une exclusion (les exclusions absolues sont protégées côté backend)
-      security: [{ cookieAuth: [] }]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Supprimée
-        '403':
-          description: Suppression interdite (exclusion absolue)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-
-  /admin/event:
-    get:
-      operationId: getEventConfig
-      summary: Configuration complète de l'événement (organisateur)
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EventAdminConfig'
-    put:
-      operationId: updateEventConfig
-      summary: Met à jour la configuration de l'événement (thème, textes, informations des mariés)
-      security: [{ cookieAuth: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EventAdminConfigInput'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EventAdminConfig'
-        '400':
-          description: Requête invalide
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-
-  /admin/staff:
-    get:
-      operationId: listStaffAccounts
-      summary: Comptes staff et leur rôle
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StaffAccountResponse'
-
-  /admin/lobby:
-    get:
-      operationId: getAdminLobby
-      summary: État détaillé du salon (vue administrateur)
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LobbyState'
-
-  /intervenant/lobby:
-    get:
-      operationId: getIntervenantLobby
-      summary: État du salon (vue intervenant)
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LobbyState'
-
-  /intervenant/lobby/open:
-    post:
-      operationId: openLobby
-      summary: Ouvre le salon
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LobbyState'
-
-  /intervenant/lobby/close:
-    post:
-      operationId: closeLobby
-      summary: Ferme le salon
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LobbyState'
-
-  /intervenant/lobby/lock:
-    post:
-      operationId: lockLobby
-      summary: Verrouille le salon
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LobbyState'
-
-  /intervenant/arrivals/recent:
-    get:
-      operationId: listRecentArrivals
-      summary: Dernières arrivées
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Arrival'
-
-  /intervenant/arrivals/late:
-    get:
-      operationId: listLateArrivals
-      summary: Invités arrivés en retard (non encore enregistrés)
-      security: [{ cookieAuth: [] }]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  required: [firstName, lastName]
-                  properties:
-                    firstName:
-                      type: string
-                    lastName:
-                      type: string
+    InvitationResolveResponse:
+      type: object
+      properties:
+        participantId:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        displayName:
+          type: string
+        eventSlug:
+          type: string
+        eventTitle:
+          type: string
+    InvitationStatusResponse:
+      type: object
+      properties:
+        invitationId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - REVOKED
+        fallbackCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    PairingCheckResponse:
+      type: object
+      properties:
+        canPair:
+          type: boolean
+        hasHardExclusion:
+          type: boolean

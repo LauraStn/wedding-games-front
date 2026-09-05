@@ -1,12 +1,14 @@
 import type { components } from "../../api/schema";
 
-export type Participant = components["schemas"]["Participant"];
-export type ParticipantInput = components["schemas"]["ParticipantInput"];
-export type Invitation = components["schemas"]["Invitation"];
-export type Exclusion = components["schemas"]["Exclusion"];
-export type ExclusionInput = components["schemas"]["ExclusionInput"];
-export type Role = components["schemas"]["Role"];
-export type LobbyState = components["schemas"]["LobbyState"];
-export type EventConfig = components["schemas"]["EventAdminConfig"];
-export type EventConfigInput = components["schemas"]["EventAdminConfigInput"];
+export type Participant = components["schemas"]["ParticipantResponse"];
+export type ParticipantCreateInput = components["schemas"]["ParticipantCreateRequest"];
+export type ParticipantUpdateInput = components["schemas"]["ParticipantUpdateRequest"];
+export type InvitationStatus = components["schemas"]["InvitationStatusResponse"];
+export type InvitationAdmin = components["schemas"]["InvitationAdminResponse"];
+export type Exclusion = components["schemas"]["PairingExclusionResponse"];
+export type ExclusionInput = components["schemas"]["PairingExclusionCreateRequest"];
+export type Role = components["schemas"]["StaffAccountResponse"]["role"];
+export type LobbyState = components["schemas"]["LobbyResponse"];
+export type EventConfig = components["schemas"]["EventPublicConfigResponse"];
+export type EventConfigInput = components["schemas"]["EventConfigUpdateRequest"];
 export type StaffAccount = components["schemas"]["StaffAccountResponse"];

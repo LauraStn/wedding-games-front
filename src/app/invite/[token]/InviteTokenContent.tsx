@@ -6,7 +6,6 @@ import { resolveInvitation } from "../../../features/auth/api";
 import { useConfirmInvitation } from "../../../features/auth/mutations";
 import { LoadingScreen } from "../../../components/LoadingScreen";
 import { ErrorPanel } from "../../../components/ErrorPanel";
-import { ROLE_HOME } from "../../../features/auth/roleHome";
 
 export function InviteTokenContent({ token }: { token: string }) {
   const router = useRouter();
@@ -39,10 +38,7 @@ export function InviteTokenContent({ token }: { token: string }) {
   const preview = query.data;
 
   const onConfirm = () => {
-    confirm.mutate(
-      { token },
-      { onSuccess: (session) => router.replace(ROLE_HOME[session.role] ?? "/lobby") },
-    );
+    confirm.mutate(token, { onSuccess: () => router.replace("/lobby") });
   };
 
   return (

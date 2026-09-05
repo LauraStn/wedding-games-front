@@ -14,10 +14,8 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function applyCssVariables(theme: EventTheme): void {
   const root = document.documentElement;
-  root.style.setProperty("--color-primary", theme.colors.primary);
-  root.style.setProperty("--color-secondary", theme.colors.secondary);
-  root.style.setProperty("--color-background", theme.colors.background);
-  root.style.setProperty("--color-accent", theme.colors.accent);
+  if (theme.colors.primary) root.style.setProperty("--color-primary", theme.colors.primary);
+  if (theme.colors.secondary) root.style.setProperty("--color-secondary", theme.colors.secondary);
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

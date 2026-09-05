@@ -1,55 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import {
   useGenerateInvitation,
   useParticipantInvitation,
-  useRegenerateInvitation,
+  useRenewFallbackCode,
+  useRevokeInvitation,
 } from "./hooks";
-import { fetchParticipantQrBlob } from "./api";
 import { LoadingScreen } from "../../components/LoadingScreen";
 import { ErrorPanel } from "../../components/ErrorPanel";
 import { StatusBadge } from "../../components/StatusBadge";
+import type { InvitationAdmin } from "./types";
 
-const STATUS_LABELS: Record<string, { label: string; tone: "neutral" | "success" | "warning" | "danger" }> = {
-  NOT_GENERATED: { label: "Non générée", tone: "neutral" },
-  VALID: { label: "Valide", tone: "success" },
+const STATUS_LABELS: Record<string, { label: string; tone: "neutral" | "success" | "danger" }> = {
+  ACTIVE: { label: "Active", tone: "success" },
   REVOKED: { label: "Révoquée", tone: "danger" },
-  ALREADY_USED: { label: "Déjà utilisée", tone: "warning" },
-  EXPIRED: { label: "Expirée", tone: "warning" },
 };
-
-function useQrObjectUrl(participantId: string, enabled: boolean) {
-  const [url, setUrl] = useState<string | null>(null);
-  const query = useQuery({
-    queryKey: ["admin-participant-qr", participantId],
-    queryFn: () => fetchParticipantQrBlob(participantId),
-    enabled,
-  });
-
-  // Cycle de vie d'une ressource externe (Blob URL) : setState + nettoyage
-  // sont ici le mécanisme React recommandé, pas un état dérivable au rendu.
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (!query.data) {
-      setUrl(null);
-      return;
-    }
-    const objectUrl = URL.createObjectURL(query.data);
-    setUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [query.data]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  return { url, isLoading: query.isLoading };
-}
 
 export function InvitationPanel({ participantId }: { participantId: string }) {
   const invitationQuery = useParticipantInvitation(participantId, true);
   const generate = useGenerateInvitation();
-  const regenerate = useRegenerateInvitation();
-  const qr = useQrObjectUrl(participantId, invitationQuery.data?.qrAvailable === true);
+  const revoke = useRevokeInvitation();
+  const renewFallbackCode = useRenewFallbackCode();
+  const [justGenerated, setJustGenerated] = useState<InvitationAdmin | null>(null);
 
   if (invitationQuery.isLoading) {
     return <LoadingScreen label="Chargement de l'invitation…" />;
@@ -62,53 +35,78 @@ export function InvitationPanel({ participantId }: { participantId: string }) {
   }
 
   const invitation = invitationQuery.data;
-  const status = invitation ? STATUS_LABELS[invitation.status] : undefined;
-  const isMutating = generate.isPending || regenerate.isPending;
+  const status = invitation?.status ? STATUS_LABELS[invitation.status] : undefined;
+  const isMutating = generate.isPending || revoke.isPending || renewFallbackCode.isPending;
 
   return (
     <div className="invitation-panel">
       <div className="invitation-panel__status">
-        {status && <StatusBadge tone={status.tone}>{status.label}</StatusBadge>}
+        {status ? <StatusBadge tone={status.tone}>{status.label}</StatusBadge> : <p>Aucune invitation générée</p>}
       </div>
 
       <div className="form__actions">
-        {invitation?.status === "NOT_GENERATED" ? (
-          <button
-            type="button"
-            className="btn btn--primary"
-            disabled={isMutating}
-            onClick={() => generate.mutate(participantId)}
-          >
-            Générer l’invitation
-          </button>
-        ) : (
+        <button
+          type="button"
+          className="btn btn--primary"
+          disabled={isMutating}
+          onClick={() =>
+            generate.mutate(participantId, { onSuccess: (result) => setJustGenerated(result) })
+          }
+        >
+          {invitation ? "Régénérer l’invitation" : "Générer l’invitation"}
+        </button>
+        {invitation?.status === "ACTIVE" && (
           <button
             type="button"
             className="btn btn--secondary"
             disabled={isMutating}
-            onClick={() => regenerate.mutate(participantId)}
+            onClick={() => revoke.mutate(participantId, { onSuccess: () => setJustGenerated(null) })}
           >
-            Régénérer l’invitation
+            Révoquer
+          </button>
+        )}
+        {invitation && (
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={isMutating}
+            onClick={() => renewFallbackCode.mutate(participantId)}
+          >
+            Renouveler le code de secours
           </button>
         )}
       </div>
-      {(generate.isError || regenerate.isError) && (
-        <ErrorPanel error={generate.error ?? regenerate.error} title="Action impossible" />
+      {(generate.isError || revoke.isError || renewFallbackCode.isError) && (
+        <ErrorPanel
+          error={generate.error ?? revoke.error ?? renewFallbackCode.error}
+          title="Action impossible"
+        />
       )}
 
-      {invitation?.qrAvailable && (
-        <div className="invitation-panel__qr">
-          {qr.isLoading && <LoadingScreen label="Chargement du QR…" />}
-          {qr.url && (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element -- blob local, non optimisable */}
-              <img src={qr.url} alt={`QR code d'invitation`} width={200} height={200} />
-              <a className="btn btn--secondary" href={qr.url} download={`invitation-${participantId}.png`}>
-                Télécharger le QR
+      {justGenerated && (
+        <div className="invitation-panel__reveal">
+          <p role="status">
+            Lien à transmettre au participant — il ne sera plus jamais affiché après avoir quitté cette page.
+          </p>
+          {justGenerated.invitationUrl && (
+            <p className="invitation-panel__link">
+              <a href={justGenerated.invitationUrl} target="_blank" rel="noreferrer">
+                {justGenerated.invitationUrl}
               </a>
-            </>
+            </p>
+          )}
+          {justGenerated.fallbackCode && (
+            <p>
+              Code de secours : <strong>{justGenerated.fallbackCode}</strong>
+            </p>
           )}
         </div>
+      )}
+
+      {renewFallbackCode.data?.fallbackCode && (
+        <p>
+          Nouveau code de secours : <strong>{renewFallbackCode.data.fallbackCode}</strong>
+        </p>
       )}
     </div>
   );

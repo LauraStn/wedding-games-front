@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useStaffLogin } from "../../../features/auth/mutations";
+import { ROLE_HOME } from "../../../features/auth/roleHome";
 import { ErrorPanel } from "../../../components/ErrorPanel";
 
 const schema = z.object({
@@ -25,7 +26,9 @@ export default function AdminLoginPage() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const onSubmit = handleSubmit((values) => {
-    login.mutate(values, { onSuccess: () => router.replace("/admin") });
+    login.mutate(values, {
+      onSuccess: (account) => router.replace((account.role && ROLE_HOME[account.role]) || "/admin"),
+    });
   });
 
   return (

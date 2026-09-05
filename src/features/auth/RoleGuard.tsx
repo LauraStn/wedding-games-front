@@ -38,7 +38,7 @@ export function RoleGuard({ allow, children }: RoleGuardProps) {
     return null;
   }
 
-  if (!allow.includes(session.role)) {
+  if (!session.role || !allow.includes(session.role)) {
     redirect("/unauthorized");
     return null;
   }

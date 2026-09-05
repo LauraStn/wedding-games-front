@@ -1,8 +1,8 @@
 import { apiClient } from "../../api/client";
 import { unwrap } from "../../api/errors";
 import type {
-  InvitationPreview,
   InvitationResolvePreview,
+  ParticipantSession,
   Session,
   StaffAccount,
   StaffLoginInput,
@@ -24,31 +24,21 @@ export async function resolveInvitation(token: string): Promise<InvitationResolv
   );
 }
 
-export async function confirmInvitation(
-  identifier: { token: string } | { code: string },
-): Promise<Session> {
-  if ("token" in identifier) {
-    return unwrap(
-      apiClient.POST("/invitations/{token}/confirm", {
-        params: { path: { token: identifier.token } },
-      }),
-    );
-  }
-  // Flow "code de secours" — non supporté par le backend actuel, voir
-  // resolveFallbackCode ci-dessous.
+export async function confirmInvitationToken(token: string): Promise<ParticipantSession> {
   return unwrap(
-    apiClient.POST("/invitations/confirm", { body: identifier }),
+    apiClient.POST("/invitations/{token}/confirm", { params: { path: { token } } }),
   );
 }
 
-/**
- * (Provisoire, non supporté par le backend) Voir le plan "Réaligner l'auth
- * sur le vrai backend" : aucune route de code de secours n'existe côté
- * serveur — cet appel échouera toujours en pratique.
- */
-export async function resolveFallbackCode(code: string): Promise<InvitationPreview> {
+export async function resolveFallbackCode(code: string): Promise<InvitationResolvePreview> {
   return unwrap(
-    apiClient.POST("/invitations/fallback", { body: { code } }),
+    apiClient.GET("/invitations/fallback/{code}/resolve", { params: { path: { code } } }),
+  );
+}
+
+export async function confirmFallbackCode(code: string): Promise<ParticipantSession> {
+  return unwrap(
+    apiClient.POST("/invitations/fallback/{code}/confirm", { params: { path: { code } } }),
   );
 }
 

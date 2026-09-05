@@ -6,12 +6,6 @@ import { fetchScreenState } from "../../features/screen/api";
 import { LoadingScreen } from "../../components/LoadingScreen";
 import { ErrorPanel } from "../../components/ErrorPanel";
 
-const LOBBY_LABELS: Record<string, string> = {
-  CLOSED: "Le salon va bientôt ouvrir",
-  OPEN: "Le salon est ouvert",
-  LOCKED: "Le salon est verrouillé",
-};
-
 function ScreenContent() {
   const query = useQuery({
     queryKey: ["screen-state"],
@@ -31,16 +25,16 @@ function ScreenContent() {
     );
   }
 
-  const { theme, lobby } = query.data;
+  const { theme } = query.data;
 
   return (
     <div className="screen">
-      <p className="screen__eyebrow">{theme.spouseNames.join(" & ")} · {new Date(theme.eventDate).toLocaleDateString("fr-FR")}</p>
+      <p className="screen__eyebrow">
+        {theme.spouseNames.join(" & ")}
+        {theme.eventDate && <> · {new Date(theme.eventDate).toLocaleDateString("fr-FR")}</>}
+      </p>
       <h1 className="screen__title">{theme.eventTitle}</h1>
-      <p className="screen__status">{LOBBY_LABELS[lobby.status] ?? lobby.status}</p>
-      {typeof lobby.connectedCount === "number" && (
-        <p className="screen__count">{lobby.connectedCount} participants connectés</p>
-      )}
+      <p className="screen__status">En attente du lancement d&apos;une activité</p>
       <p className="screen__hint">Scannez le QR posé sur votre table pour rejoindre l&apos;expérience.</p>
     </div>
   );

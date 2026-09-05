@@ -59,20 +59,15 @@ describe("InviteTokenContent", () => {
       eventSlug: "seed-wedding",
       eventTitle: "Notre mariage",
     });
-    vi.spyOn(authApi, "confirmInvitation").mockResolvedValue({
-      actorType: "PARTICIPANT",
-      role: "PARTICIPANT",
-      participant: {
-        participantId: "p1",
-        eventId: "e1",
-        eventSlug: "seed-wedding",
-        firstName: "Patrick",
-        displayName: "Patrick Santin",
-        status: "CONNECTED",
-        totalPoints: 0,
-        totalWins: 0,
-      },
-      staff: null,
+    vi.spyOn(authApi, "confirmInvitationToken").mockResolvedValue({
+      participantId: "p1",
+      eventId: "e1",
+      eventSlug: "seed-wedding",
+      firstName: "Patrick",
+      displayName: "Patrick Santin",
+      status: "CONNECTED",
+      totalPoints: 0,
+      totalWins: 0,
     });
 
     renderInvitePage("valid-token");
@@ -83,9 +78,6 @@ describe("InviteTokenContent", () => {
     await waitFor(() => {
       expect(replaceMock).toHaveBeenCalledWith("/lobby");
     });
-    expect(authApi.confirmInvitation).toHaveBeenCalledWith(
-      { token: "valid-token" },
-      expect.anything(),
-    );
+    expect(authApi.confirmInvitationToken).toHaveBeenCalledWith("valid-token", expect.anything());
   });
 });

@@ -20,7 +20,7 @@ export default function AdminLobbyPage() {
   }
 
   const lobby = lobbyQuery.data;
-  const status = lobby ? LOBBY_LABELS[lobby.status] : undefined;
+  const status = lobby?.status ? LOBBY_LABELS[lobby.status] : undefined;
 
   return (
     <div className="card">
@@ -29,10 +29,6 @@ export default function AdminLobbyPage() {
         intervenant. Cette page est en lecture seule.
       </p>
       {status && <StatusBadge tone={status.tone}>{status.label}</StatusBadge>}
-      {typeof lobby?.connectedCount === "number" && (
-        <p>{lobby.connectedCount} participant{lobby.connectedCount > 1 ? "s" : ""} connecté{lobby.connectedCount > 1 ? "s" : ""}</p>
-      )}
-      {lobby?.message && <p>{lobby.message}</p>}
     </div>
   );
 }

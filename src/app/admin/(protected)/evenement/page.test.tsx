@@ -11,11 +11,11 @@ const BASE_CONFIG = {
   title: "Mariage de démonstration",
   language: "fr-FR",
   status: "DRAFT" as const,
-  spouseOneName: null,
-  spouseTwoName: null,
-  eventDate: null,
-  venueName: null,
-  welcomeMessage: null,
+  spouseOneName: undefined,
+  spouseTwoName: undefined,
+  eventDate: undefined,
+  venueName: undefined,
+  welcomeMessage: undefined,
   visualConfig: {},
 };
 

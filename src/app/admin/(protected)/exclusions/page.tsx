@@ -18,7 +18,7 @@ const schema = z
   .object({
     participantAId: z.string().min(1, "Sélectionnez un premier participant"),
     participantBId: z.string().min(1, "Sélectionnez un second participant"),
-    type: z.enum(["ABSOLUTE", "PREFERENCE"]),
+    exclusionType: z.enum(["HARD", "PREFERENCE"]),
     reason: z.string().trim().optional(),
   })
   .refine((values) => values.participantAId !== values.participantBId, {
@@ -41,13 +41,13 @@ export default function AdminExclusionsPage() {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { type: "PREFERENCE" },
+    defaultValues: { exclusionType: "PREFERENCE" },
   });
 
   const participants = participantsQuery.data ?? [];
-  const nameOf = (id: string) => {
+  const nameOf = (id: string | undefined) => {
     const participant = participants.find((p) => p.id === id);
-    return participant ? `${participant.firstName} ${participant.lastName}` : id;
+    return participant ? `${participant.firstName} ${participant.lastName}` : (id ?? "");
   };
 
   const onSubmit = handleSubmit((values) => {
@@ -55,10 +55,10 @@ export default function AdminExclusionsPage() {
       {
         participantAId: values.participantAId,
         participantBId: values.participantBId,
-        type: values.type,
-        reason: values.reason || null,
+        exclusionType: values.exclusionType,
+        reason: values.reason || undefined,
       },
-      { onSuccess: () => reset({ type: "PREFERENCE" }) },
+      { onSuccess: () => reset({ exclusionType: "PREFERENCE" }) },
     );
   });
 
@@ -92,11 +92,11 @@ export default function AdminExclusionsPage() {
           <fieldset>
             <legend>Type d&apos;exclusion</legend>
             <label className="radio-option">
-              <input type="radio" value="PREFERENCE" {...register("type")} />
+              <input type="radio" value="PREFERENCE" {...register("exclusionType")} />
               Préférence (évitée si possible)
             </label>
             <label className="radio-option">
-              <input type="radio" value="ABSOLUTE" {...register("type")} />
+              <input type="radio" value="HARD" {...register("exclusionType")} />
               Absolue (jamais associés)
             </label>
           </fieldset>
@@ -125,8 +125,8 @@ export default function AdminExclusionsPage() {
             {exclusionsQuery.data.map((exclusion) => (
               <li key={exclusion.id} className="exclusion-list__item">
                 <div>
-                  <StatusBadge tone={exclusion.type === "ABSOLUTE" ? "danger" : "neutral"}>
-                    {exclusion.type === "ABSOLUTE" ? "Interdiction absolue" : "Préférence"}
+                  <StatusBadge tone={exclusion.exclusionType === "HARD" ? "danger" : "neutral"}>
+                    {exclusion.exclusionType === "HARD" ? "Interdiction absolue" : "Préférence"}
                   </StatusBadge>
                   <p>
                     {nameOf(exclusion.participantAId)} — {nameOf(exclusion.participantBId)}
@@ -136,8 +136,8 @@ export default function AdminExclusionsPage() {
                 <button
                   type="button"
                   className="btn btn--secondary btn--small"
-                  disabled={deleteExclusion.isPending}
-                  onClick={() => deleteExclusion.mutate(exclusion.id)}
+                  disabled={!exclusion.id || deleteExclusion.isPending}
+                  onClick={() => exclusion.id && deleteExclusion.mutate(exclusion.id)}
                 >
                   Supprimer
                 </button>

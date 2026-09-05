@@ -1,34 +1,39 @@
 import { apiClient } from "../../api/client";
+import { getCurrentEventId } from "../../api/currentEvent";
 import { unwrap } from "../../api/errors";
 import type { components } from "../../api/schema";
 
-export type LobbyState = components["schemas"]["LobbyState"];
-export type Arrival = components["schemas"]["Arrival"];
-export interface LateArrival {
-  firstName: string;
-  lastName: string;
-}
-
-export async function fetchIntervenantLobby(): Promise<LobbyState> {
-  return unwrap(apiClient.GET("/intervenant/lobby"));
-}
+export type LobbyState = components["schemas"]["LobbyResponse"];
+export type LobbyParticipant = components["schemas"]["LobbyParticipantResponse"];
 
 export async function openLobby(): Promise<LobbyState> {
-  return unwrap(apiClient.POST("/intervenant/lobby/open"));
+  const eventId = await getCurrentEventId();
+  return unwrap(apiClient.POST("/staff/events/{eventId}/lobby/open", { params: { path: { eventId } } }));
 }
 
 export async function closeLobby(): Promise<LobbyState> {
-  return unwrap(apiClient.POST("/intervenant/lobby/close"));
+  const eventId = await getCurrentEventId();
+  return unwrap(apiClient.POST("/staff/events/{eventId}/lobby/close", { params: { path: { eventId } } }));
 }
 
 export async function lockLobby(): Promise<LobbyState> {
-  return unwrap(apiClient.POST("/intervenant/lobby/lock"));
+  const eventId = await getCurrentEventId();
+  return unwrap(apiClient.POST("/staff/events/{eventId}/lobby/lock", { params: { path: { eventId } } }));
 }
 
-export async function fetchRecentArrivals(): Promise<Arrival[]> {
-  return unwrap(apiClient.GET("/intervenant/arrivals/recent"));
+/** Vue unifiée des participants du salon (statut de connexion, horodatages, doublons potentiels). */
+export async function fetchLobbyParticipants(): Promise<LobbyParticipant[]> {
+  const eventId = await getCurrentEventId();
+  return unwrap(
+    apiClient.GET("/staff/events/{eventId}/lobby/participants", { params: { path: { eventId } } }),
+  );
 }
 
-export async function fetchLateArrivals(): Promise<LateArrival[]> {
-  return unwrap(apiClient.GET("/intervenant/arrivals/late"));
+export async function admitParticipant(participantId: string): Promise<LobbyParticipant> {
+  const eventId = await getCurrentEventId();
+  return unwrap(
+    apiClient.POST("/staff/events/{eventId}/lobby/participants/{participantId}/admit", {
+      params: { path: { eventId, participantId } },
+    }),
+  );
 }

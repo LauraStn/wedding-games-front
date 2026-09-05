@@ -14,11 +14,10 @@ const session = {
     eventSlug: "seed-wedding",
     firstName: "Sandrine",
     displayName: "Sandrine Santin",
-    status: "CONNECTED",
+    status: "CONNECTED" as const,
     totalPoints: 40,
     totalWins: 2,
   },
-  staff: null,
 };
 
 function setOnline(value: boolean) {
@@ -32,7 +31,7 @@ describe("ParticipantLobbyContent", () => {
   it("affiche l'identité confirmée, les points/victoires et une zone réservée aux futures activités, y compris sur mobile", async () => {
     window.innerWidth = 375; // largeur type mobile
     vi.spyOn(authApi, "fetchSession").mockResolvedValue(session);
-    vi.spyOn(lobbyApi, "fetchLobby").mockResolvedValue({ status: "OPEN", connectedCount: 8, message: null });
+    vi.spyOn(lobbyApi, "fetchLobby").mockResolvedValue({ status: "OPEN", presentCount: 8 });
 
     renderWithProviders(<ParticipantLobbyContent />);
 
@@ -46,7 +45,7 @@ describe("ParticipantLobbyContent", () => {
 
   it("signale la perte de connexion et propose une reconnexion", async () => {
     vi.spyOn(authApi, "fetchSession").mockResolvedValue(session);
-    vi.spyOn(lobbyApi, "fetchLobby").mockResolvedValue({ status: "OPEN", connectedCount: 3, message: null });
+    vi.spyOn(lobbyApi, "fetchLobby").mockResolvedValue({ status: "OPEN", presentCount: 3 });
 
     renderWithProviders(<ParticipantLobbyContent />);
     await waitFor(() => expect(screen.getByText("Sandrine Santin")).toBeInTheDocument());
@@ -59,7 +58,7 @@ describe("ParticipantLobbyContent", () => {
 
   it("ne stocke aucune donnée sensible (session, points, jeton) dans le stockage navigateur", async () => {
     vi.spyOn(authApi, "fetchSession").mockResolvedValue(session);
-    vi.spyOn(lobbyApi, "fetchLobby").mockResolvedValue({ status: "OPEN", connectedCount: 5, message: null });
+    vi.spyOn(lobbyApi, "fetchLobby").mockResolvedValue({ status: "OPEN", presentCount: 5 });
 
     renderWithProviders(<ParticipantLobbyContent />);
     await waitFor(() => expect(screen.getByText("Sandrine Santin")).toBeInTheDocument());

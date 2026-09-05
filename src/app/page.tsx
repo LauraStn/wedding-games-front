@@ -8,11 +8,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "../features/auth/useSession";
-import { useConfirmInvitation, useResolveFallbackCode } from "../features/auth/mutations";
+import { useConfirmFallbackCode, useResolveFallbackCode } from "../features/auth/mutations";
 import { ROLE_HOME } from "../features/auth/roleHome";
 import { ErrorPanel } from "../components/ErrorPanel";
 import { WeddupMark } from "../components/WeddupMark";
-import type { InvitationPreview } from "../features/auth/types";
+import type { InvitationResolvePreview } from "../features/auth/types";
 
 const fallbackSchema = z.object({
   code: z
@@ -22,19 +22,6 @@ const fallbackSchema = z.object({
 });
 
 type FallbackFormValues = z.infer<typeof fallbackSchema>;
-
-function invitationStatusMessage(status: InvitationPreview["status"]): string | null {
-  switch (status) {
-    case "VALID":
-      return null;
-    case "REVOKED":
-      return "Cette invitation a été révoquée. Rapprochez-vous des mariés.";
-    case "ALREADY_USED":
-      return "Cette invitation a déjà été utilisée sur un autre appareil.";
-    case "EXPIRED":
-      return "Cette invitation a expiré.";
-  }
-}
 
 function SessionExpiredNotice() {
   const searchParams = useSearchParams();
@@ -53,11 +40,11 @@ export default function HomePage() {
   const { session } = useSession();
   const router = useRouter();
   const [step, setStep] = useState<"idle" | "code">("idle");
-  const [preview, setPreview] = useState<InvitationPreview | null>(null);
+  const [preview, setPreview] = useState<InvitationResolvePreview | null>(null);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
 
   const resolveFallback = useResolveFallbackCode();
-  const confirm = useConfirmInvitation();
+  const confirm = useConfirmFallbackCode();
 
   const {
     register,
@@ -74,10 +61,7 @@ export default function HomePage() {
 
   const onConfirm = () => {
     if (!submittedCode) return;
-    confirm.mutate(
-      { code: submittedCode },
-      { onSuccess: (session) => router.replace(ROLE_HOME[session.role] ?? "/lobby") },
-    );
+    confirm.mutate(submittedCode, { onSuccess: () => router.replace("/lobby") });
   };
 
   const onRestart = () => {
@@ -91,8 +75,6 @@ export default function HomePage() {
     onRestart();
     setStep("idle");
   };
-
-  const blockingStatusMessage = preview ? invitationStatusMessage(preview.status) : null;
 
   return (
     <div className="home">
@@ -137,7 +119,10 @@ export default function HomePage() {
                 </p>
 
                 {session ? (
-                  <Link href={ROLE_HOME[session.role] ?? "/"} className="btn btn--primary home__cta">
+                  <Link
+                    href={(session.role && ROLE_HOME[session.role]) || "/"}
+                    className="btn btn--primary home__cta"
+                  >
                     Continuer <span aria-hidden="true">→</span>
                   </Link>
                 ) : (
@@ -188,10 +173,10 @@ export default function HomePage() {
                   <ErrorPanel error={resolveFallback.error} title="Code invalide" />
                 )}
 
-                {preview && !blockingStatusMessage && (
+                {preview && (
                   <div className="identity-confirm">
                     <p>
-                      Bienvenue <strong>{preview.firstName} {preview.lastName}</strong>. Confirmez-vous
+                      Bienvenue <strong>{preview.displayName}</strong>. Confirmez-vous
                       votre identité ?
                     </p>
                     <div className="identity-confirm__actions">
@@ -203,15 +188,6 @@ export default function HomePage() {
                       </button>
                     </div>
                     {confirm.isError && <ErrorPanel error={confirm.error} title="Confirmation impossible" />}
-                  </div>
-                )}
-
-                {preview && blockingStatusMessage && (
-                  <div className="error-panel" role="alert">
-                    <p className="error-panel__message">{blockingStatusMessage}</p>
-                    <button type="button" className="btn btn--secondary" onClick={onRestart}>
-                      Réessayer avec un autre code
-                    </button>
                   </div>
                 )}
               </section>

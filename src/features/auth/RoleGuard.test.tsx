@@ -4,7 +4,7 @@ import { renderWithProviders } from "../../test/test-utils";
 import { RoleGuard } from "./RoleGuard";
 import { ApiError } from "../../api/errors";
 import * as authApi from "./api";
-import type { Session } from "./types";
+import type { Role } from "./types";
 
 const redirectMock = vi.fn();
 
@@ -12,7 +12,7 @@ vi.mock("next/navigation", () => ({
   redirect: (url: string) => redirectMock(url),
 }));
 
-function renderGuarded(allow: Session["role"][]) {
+function renderGuarded(allow: Role[]) {
   return renderWithProviders(
     <RoleGuard allow={allow}>
       <div>Contenu protégé</div>
@@ -50,7 +50,6 @@ describe("RoleGuard", () => {
         totalPoints: 12,
         totalWins: 1,
       },
-      staff: null,
     });
 
     renderGuarded(["PARTICIPANT"]);
@@ -63,7 +62,6 @@ describe("RoleGuard", () => {
     vi.spyOn(authApi, "fetchSession").mockResolvedValue({
       actorType: "STAFF",
       role: "INTERVENANT",
-      participant: null,
       staff: {
         id: "s1",
         username: "alex",

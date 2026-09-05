@@ -13,11 +13,12 @@ import {
   fetchParticipants,
   fetchStaffAccounts,
   generateParticipantInvitation,
-  regenerateParticipantInvitation,
+  renewParticipantFallbackCode,
+  revokeParticipantInvitation,
   updateEventConfig,
   updateParticipant,
 } from "./api";
-import type { EventConfigInput, ParticipantInput } from "./types";
+import type { EventConfigInput, ParticipantUpdateInput } from "./types";
 
 export function useParticipants(search: string) {
   return useQuery({
@@ -37,7 +38,7 @@ export function useCreateParticipant() {
 export function useUpdateParticipant() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: ParticipantInput }) => updateParticipant(id, input),
+    mutationFn: ({ id, input }: { id: string; input: ParticipantUpdateInput }) => updateParticipant(id, input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-participants"] }),
   });
 }
@@ -67,10 +68,19 @@ export function useGenerateInvitation() {
   });
 }
 
-export function useRegenerateInvitation() {
+export function useRevokeInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: regenerateParticipantInvitation,
+    mutationFn: revokeParticipantInvitation,
+    onSuccess: (_data, id) =>
+      queryClient.invalidateQueries({ queryKey: ["admin-participant-invitation", id] }),
+  });
+}
+
+export function useRenewFallbackCode() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: renewParticipantFallbackCode,
     onSuccess: (_data, id) =>
       queryClient.invalidateQueries({ queryKey: ["admin-participant-invitation", id] }),
   });

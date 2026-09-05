@@ -39,7 +39,7 @@ export default function AdminRolesPage() {
           <tr key={account.id}>
             <td>{account.username}</td>
             <td>{account.displayName}</td>
-            <td>{ROLE_LABELS[account.role] ?? account.role}</td>
+            <td>{(account.role && ROLE_LABELS[account.role]) ?? account.role}</td>
             <td>
               <StatusBadge tone={account.active ? "success" : "neutral"}>
                 {account.active ? "Actif" : "Désactivé"}

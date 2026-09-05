@@ -57,11 +57,11 @@ export function EventConfigForm({ config, onSubmit, isSubmitting }: EventConfigF
   const onValid = handleSubmit((values) => {
     onSubmit({
       title: values.title,
-      spouseOneName: values.spouseOneName || null,
-      spouseTwoName: values.spouseTwoName || null,
-      eventDate: values.eventDate || null,
-      venueName: values.venueName || null,
-      welcomeMessage: values.welcomeMessage || null,
+      spouseOneName: values.spouseOneName || undefined,
+      spouseTwoName: values.spouseTwoName || undefined,
+      eventDate: values.eventDate || undefined,
+      venueName: values.venueName || undefined,
+      welcomeMessage: values.welcomeMessage || undefined,
       visualConfig: {
         ...(values.primaryColor ? { primaryColor: values.primaryColor } : {}),
         ...(values.secondaryColor ? { secondaryColor: values.secondaryColor } : {}),

@@ -12,6 +12,9 @@ const LOBBY_LABELS: Record<string, { label: string; tone: "neutral" | "success" 
   CLOSED: { label: "Salon fermé", tone: "neutral" },
   OPEN: { label: "Salon ouvert", tone: "success" },
   LOCKED: { label: "Salon verrouillé", tone: "warning" },
+  ACTIVE: { label: "Activité en cours", tone: "success" },
+  PAUSED: { label: "Activité en pause", tone: "warning" },
+  FINISHED: { label: "Soirée terminée", tone: "neutral" },
 };
 
 export function ParticipantLobbyContent() {
@@ -23,7 +26,7 @@ export function ParticipantLobbyContent() {
     return <LoadingScreen label="Chargement du salon…" />;
   }
 
-  const lobbyInfo = lobby ? LOBBY_LABELS[lobby.status] : undefined;
+  const lobbyInfo = lobby?.status ? LOBBY_LABELS[lobby.status] : undefined;
 
   return (
     <div className="page">
@@ -54,15 +57,15 @@ export function ParticipantLobbyContent() {
         {lobbyInfo && (
           <div className="lobby-card__status">
             <StatusBadge tone={lobbyInfo.tone}>{lobbyInfo.label}</StatusBadge>
-            {typeof lobby?.connectedCount === "number" && (
-              <span>{lobby.connectedCount} participant{lobby.connectedCount > 1 ? "s" : ""} connecté{lobby.connectedCount > 1 ? "s" : ""}</span>
+            {typeof lobby?.presentCount === "number" && (
+              <span>{lobby.presentCount} participant{lobby.presentCount > 1 ? "s" : ""} connecté{lobby.presentCount > 1 ? "s" : ""}</span>
             )}
           </div>
         )}
 
-        {lobby?.message && (
+        {lobby?.welcomeMessage && (
           <p className="lobby-card__message" role="status">
-            {lobby.message}
+            {lobby.welcomeMessage}
           </p>
         )}
 

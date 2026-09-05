@@ -1,72 +1,83 @@
 import { apiClient } from "../../api/client";
+import { getCurrentEventId } from "../../api/currentEvent";
 import { unwrap } from "../../api/errors";
 import type {
   EventConfig,
   EventConfigInput,
   Exclusion,
   ExclusionInput,
-  Invitation,
+  InvitationAdmin,
+  InvitationStatus,
   LobbyState,
   Participant,
-  ParticipantInput,
+  ParticipantCreateInput,
+  ParticipantUpdateInput,
   StaffAccount,
 } from "./types";
 
 export async function fetchParticipants(search?: string): Promise<Participant[]> {
+  const eventId = await getCurrentEventId();
   return unwrap(
-    apiClient.GET("/admin/participants", { params: { query: search ? { search } : {} } }),
+    apiClient.GET("/admin/events/{eventId}/participants", {
+      params: { path: { eventId }, query: search ? { query: search } : {} },
+    }),
   );
 }
 
-export async function createParticipant(input: ParticipantInput): Promise<Participant> {
-  return unwrap(apiClient.POST("/admin/participants", { body: input }));
+export async function createParticipant(input: ParticipantCreateInput): Promise<Participant> {
+  const eventId = await getCurrentEventId();
+  return unwrap(
+    apiClient.POST("/admin/events/{eventId}/participants", { params: { path: { eventId } }, body: input }),
+  );
 }
 
-export async function updateParticipant(id: string, input: ParticipantInput): Promise<Participant> {
-  return unwrap(
-    apiClient.PATCH("/admin/participants/{id}", { params: { path: { id } }, body: input }),
-  );
+export async function updateParticipant(id: string, input: ParticipantUpdateInput): Promise<Participant> {
+  return unwrap(apiClient.PUT("/admin/participants/{id}", { params: { path: { id } }, body: input }));
 }
 
 export async function disableParticipant(id: string): Promise<Participant> {
+  return unwrap(apiClient.POST("/admin/participants/{id}/disable", { params: { path: { id } } }));
+}
+
+export async function fetchParticipantInvitation(id: string): Promise<InvitationStatus> {
   return unwrap(
-    apiClient.POST("/admin/participants/{id}/disable", { params: { path: { id } } }),
+    apiClient.GET("/admin/participants/{participantId}/invitation", { params: { path: { participantId: id } } }),
   );
 }
 
-export async function fetchParticipantInvitation(id: string): Promise<Invitation> {
+/** Génère (ou régénère) l'invitation : seule occasion où le jeton brut / lien / QR sont exposés. */
+export async function generateParticipantInvitation(id: string): Promise<InvitationAdmin> {
   return unwrap(
-    apiClient.GET("/admin/participants/{id}/invitation", { params: { path: { id } } }),
+    apiClient.POST("/admin/participants/{participantId}/invitation", { params: { path: { participantId: id } } }),
   );
 }
 
-export async function generateParticipantInvitation(id: string): Promise<Invitation> {
-  return unwrap(
-    apiClient.POST("/admin/participants/{id}/invitation/generate", { params: { path: { id } } }),
+export async function revokeParticipantInvitation(id: string): Promise<void> {
+  await unwrap(
+    apiClient.POST("/admin/participants/{participantId}/invitation/revoke", {
+      params: { path: { participantId: id } },
+    }),
   );
 }
 
-export async function regenerateParticipantInvitation(id: string): Promise<Invitation> {
+export async function renewParticipantFallbackCode(id: string): Promise<{ fallbackCode?: string }> {
   return unwrap(
-    apiClient.POST("/admin/participants/{id}/invitation/regenerate", { params: { path: { id } } }),
+    apiClient.POST("/admin/participants/{participantId}/invitation/fallback-code/renew", {
+      params: { path: { participantId: id } },
+    }),
   );
-}
-
-export async function fetchParticipantQrBlob(id: string): Promise<Blob | null> {
-  const { data, response } = await apiClient.GET("/admin/participants/{id}/invitation/qr", {
-    params: { path: { id } },
-    parseAs: "blob",
-  });
-  if (!response.ok || !data) return null;
-  return data as unknown as Blob;
 }
 
 export async function fetchExclusions(): Promise<Exclusion[]> {
-  return unwrap(apiClient.GET("/admin/exclusions"));
+  const eventId = await getCurrentEventId();
+  return unwrap(apiClient.GET("/admin/events/{eventId}/exclusions", { params: { path: { eventId } } }));
 }
 
 export async function createExclusion(input: ExclusionInput): Promise<Exclusion> {
-  return unwrap(apiClient.POST("/admin/exclusions", { body: input }));
+  const eventId = await getCurrentEventId();
+  return unwrap(
+    apiClient.POST("/admin/events/{eventId}/exclusions", { params: { path: { eventId } }, body: input }),
+  );
 }
 
 export async function deleteExclusion(id: string): Promise<void> {
@@ -78,7 +89,8 @@ export async function fetchStaffAccounts(): Promise<StaffAccount[]> {
 }
 
 export async function fetchAdminLobby(): Promise<LobbyState> {
-  return unwrap(apiClient.GET("/admin/lobby"));
+  const eventId = await getCurrentEventId();
+  return unwrap(apiClient.GET("/admin/events/{eventId}/lobby", { params: { path: { eventId } } }));
 }
 
 export async function fetchEventConfig(): Promise<EventConfig> {

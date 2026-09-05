@@ -7,13 +7,13 @@ import * as adminApi from "../../../../features/admin/api";
 describe("AdminExclusionsPage", () => {
   it("signale clairement les exclusions absolues issues des données de développement", async () => {
     vi.spyOn(adminApi, "fetchParticipants").mockResolvedValue([
-      { id: "j1", firstName: "Jessika", lastName: "Dijoux", active: true, role: "PARTICIPANT", invitationStatus: "VALID" },
-      { id: "s1", firstName: "Sandrine", lastName: "Santin", active: true, role: "PARTICIPANT", invitationStatus: "VALID" },
-      { id: "p1", firstName: "Patrick", lastName: "Santin", active: true, role: "PARTICIPANT", invitationStatus: "VALID" },
+      { id: "j1", firstName: "Jessika", lastName: "Dijoux", displayName: "Jessika Dijoux", status: "CONFIRMED", participantType: "GUEST" },
+      { id: "s1", firstName: "Sandrine", lastName: "Santin", displayName: "Sandrine Santin", status: "CONFIRMED", participantType: "GUEST" },
+      { id: "p1", firstName: "Patrick", lastName: "Santin", displayName: "Patrick Santin", status: "CONFIRMED", participantType: "GUEST" },
     ]);
     vi.spyOn(adminApi, "fetchExclusions").mockResolvedValue([
-      { id: "e1", participantAId: "j1", participantBId: "s1", type: "ABSOLUTE", reason: null },
-      { id: "e2", participantAId: "j1", participantBId: "p1", type: "ABSOLUTE", reason: null },
+      { id: "e1", participantAId: "j1", participantBId: "s1", exclusionType: "HARD" },
+      { id: "e2", participantAId: "j1", participantBId: "p1", exclusionType: "HARD" },
     ]);
 
     renderWithProviders(<AdminExclusionsPage />);
