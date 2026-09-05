@@ -955,6 +955,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/staff/questions/{questionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consulte une question */
+        get: operations["get_5"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/staff/questions/{questionId}/finalists": {
         parameters: {
             query?: never;
@@ -984,6 +1001,40 @@ export interface paths {
         };
         /** Liste toutes les reponses d'une question pour moderation (y compris masquees) */
         get: operations["list_6"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/games/{gameId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consulte une partie */
+        get: operations["get_6"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/games/{gameId}/questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liste les questions d'une partie, pour que l'intervenant choisisse laquelle piloter */
+        get: operations["list_7"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1034,6 +1085,23 @@ export interface paths {
             cookie?: never;
         };
         get: operations["participants"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liste les parties d'un evenement, pour que l'intervenant choisisse laquelle piloter */
+        get: operations["list_8"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1134,7 +1202,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_5"];
+        get: operations["get_7"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1150,7 +1218,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_6"];
+        get: operations["get_8"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3382,6 +3450,28 @@ export interface operations {
             };
         };
     };
+    get_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionResponse"];
+                };
+            };
+        };
+    };
     finalists: {
         parameters: {
             query?: {
@@ -3424,6 +3514,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AnswerModerationResponse"][];
+                };
+            };
+        };
+    };
+    get_6: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameResponse"];
+                };
+            };
+        };
+    };
+    list_7: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionResponse"][];
                 };
             };
         };
@@ -3491,6 +3625,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["LobbyParticipantResponse"][];
+                };
+            };
+        };
+    };
+    list_8: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameResponse"][];
                 };
             };
         };
@@ -3601,7 +3757,7 @@ export interface operations {
             };
         };
     };
-    get_5: {
+    get_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -3623,7 +3779,7 @@ export interface operations {
             };
         };
     };
-    get_6: {
+    get_8: {
         parameters: {
             query?: never;
             header?: never;

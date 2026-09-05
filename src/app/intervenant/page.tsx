@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RoleGuard } from "../../features/auth/RoleGuard";
 import {
-  admitParticipant,
-  closeLobby,
-  fetchLobbyParticipants,
-  lockLobby,
-  openLobby,
-  type LobbyState,
-} from "../../features/intervenant/api";
+  useAdmitParticipant,
+  useCloseLobby,
+  useLobbyParticipants,
+  useLockLobby,
+  useOpenLobby,
+} from "../../features/intervenant/hooks";
+import type { LobbyState } from "../../features/intervenant/api";
+import { MatchmakingPanel } from "../../features/intervenant/MatchmakingPanel";
+import { GamePilotPanel } from "../../features/intervenant/GamePilotPanel";
 import { LoadingScreen } from "../../components/LoadingScreen";
 import { ErrorPanel } from "../../components/ErrorPanel";
 import { EmptyState } from "../../components/EmptyState";
@@ -26,24 +27,15 @@ const LOBBY_LABELS: Record<string, { label: string; tone: "neutral" | "success" 
 };
 
 function IntervenantContent() {
-  const queryClient = useQueryClient();
   // Aucun endpoint staff ne permet de lire le statut du salon sans le modifier (seul ADMIN
   // le peut via /admin/events/{eventId}/lobby) : le badge ne se peuple qu'après une action.
   const [lobby, setLobby] = useState<LobbyState | null>(null);
 
-  const participantsQuery = useQuery({
-    queryKey: ["intervenant-lobby-participants"],
-    queryFn: fetchLobbyParticipants,
-    refetchInterval: 15_000,
-  });
-
-  const openMutation = useMutation({ mutationFn: openLobby, onSuccess: setLobby });
-  const closeMutation = useMutation({ mutationFn: closeLobby, onSuccess: setLobby });
-  const lockMutation = useMutation({ mutationFn: lockLobby, onSuccess: setLobby });
-  const admitMutation = useMutation({
-    mutationFn: admitParticipant,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["intervenant-lobby-participants"] }),
-  });
+  const participantsQuery = useLobbyParticipants();
+  const openMutation = useOpenLobby();
+  const closeMutation = useCloseLobby();
+  const lockMutation = useLockLobby();
+  const admitMutation = useAdmitParticipant();
 
   const status = lobby?.status ? LOBBY_LABELS[lobby.status] : undefined;
   const isMutating = openMutation.isPending || closeMutation.isPending || lockMutation.isPending;
@@ -64,13 +56,28 @@ function IntervenantContent() {
         </header>
 
         <div className="intervenant-actions">
-          <button type="button" className="btn btn--primary" disabled={isMutating} onClick={() => openMutation.mutate()}>
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={isMutating}
+            onClick={() => openMutation.mutate(undefined, { onSuccess: setLobby })}
+          >
             Ouvrir le salon
           </button>
-          <button type="button" className="btn btn--secondary" disabled={isMutating} onClick={() => lockMutation.mutate()}>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={isMutating}
+            onClick={() => lockMutation.mutate(undefined, { onSuccess: setLobby })}
+          >
             Verrouiller
           </button>
-          <button type="button" className="btn btn--secondary" disabled={isMutating} onClick={() => closeMutation.mutate()}>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={isMutating}
+            onClick={() => closeMutation.mutate(undefined, { onSuccess: setLobby })}
+          >
             Fermer
           </button>
         </div>
@@ -132,11 +139,8 @@ function IntervenantContent() {
         {admitMutation.isError && <ErrorPanel error={admitMutation.error} title="Action impossible" />}
       </div>
 
-      <EmptyState
-        title="Jeux non disponibles"
-        description="Le pilotage des jeux, questions et votes sera ajouté dans une prochaine phase."
-        icon="🎲"
-      />
+      <MatchmakingPanel />
+      <GamePilotPanel />
     </div>
   );
 }

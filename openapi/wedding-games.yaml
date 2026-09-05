@@ -8,7 +8,7 @@ info:
     name: Organisation du mariage
   version: v1
 servers:
-  - url: http://localhost:8081
+  - url: http://localhost:8080
     description: Generated server url
 tags:
   - name: Intervenant - Retardataires
@@ -17,18 +17,16 @@ tags:
     description: Configuration des questions d'une partie (reserve a l'administrateur)
   - name: Admin - Participants
     description: Gestion des participants (reserve a l'administrateur)
-  - name: Intervenant - Questions
-    description: Activation et fermeture d'une question
   - name: Jury - Finalistes
     description: Top 3 des reponses les plus votees (egalites incluses), transmis au jury
   - name: Admin - Personnages
     description: Catalogue de personnages (reserve a l'administrateur)
-  - name: Intervenant - Parties
-    description: Pilotage de la machine d'etat commune aux jeux
   - name: Admin - Exclusions
     description: Gestion des exclusions de matchmaking (reserve a l'administrateur)
   - name: Quiz
     description: 'Saisie d''equipe en direct: prise de main, transfert du controle, reponse synchronisee'
+  - name: Intervenant - Questions
+    description: Consultation, activation et fermeture d'une question
   - name: Admin - Parties
     description: Configuration des parties (reserve a l'administrateur)
   - name: Session
@@ -45,6 +43,8 @@ tags:
     description: Pilotage du salon d'attente (ouverture, fermeture, arrivees)
   - name: Salon
     description: Heartbeat de presence du participant dans le salon d'attente
+  - name: Intervenant - Parties
+    description: Consultation et pilotage de la machine d'etat commune aux jeux
   - name: Equipe
     description: Decouverte du personnage assigne et du binome/trio, une fois le matchmaking effectue
   - name: Intervenant - Matchmaking
@@ -1638,6 +1638,26 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MyTeamResponse'
+  /staff/questions/{questionId}:
+    get:
+      tags:
+        - Intervenant - Questions
+      summary: Consulte une question
+      operationId: get_5
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/QuestionResponse'
   /staff/questions/{questionId}/finalists:
     get:
       tags:
@@ -1691,6 +1711,48 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AnswerModerationResponse'
+  /staff/games/{gameId}:
+    get:
+      tags:
+        - Intervenant - Parties
+      summary: Consulte une partie
+      operationId: get_6
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+  /staff/games/{gameId}/questions:
+    get:
+      tags:
+        - Intervenant - Questions
+      summary: Liste les questions d'une partie, pour que l'intervenant choisisse laquelle piloter
+      operationId: list_7
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuestionResponse'
   /staff/events/{eventId}/matchmaking/teams:
     get:
       tags:
@@ -1762,6 +1824,28 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/LobbyParticipantResponse'
+  /staff/events/{eventId}/games:
+    get:
+      tags:
+        - Intervenant - Parties
+      summary: Liste les parties d'un evenement, pour que l'intervenant choisisse laquelle piloter
+      operationId: list_8
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameResponse'
   /session/me:
     get:
       tags:
@@ -1849,7 +1933,7 @@ paths:
     get:
       tags:
         - Admin - Questions
-      operationId: get_5
+      operationId: get_7
       parameters:
         - name: id
           in: path
@@ -1868,7 +1952,7 @@ paths:
     get:
       tags:
         - Admin - Parties
-      operationId: get_6
+      operationId: get_8
       parameters:
         - name: id
           in: path
