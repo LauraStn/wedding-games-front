@@ -121,3 +121,16 @@ export async function fetchFinalists(questionId: string, revealVoteCount: boolea
     }),
   );
 }
+
+export type PodiumEntry = components["schemas"]["PodiumEntryResponse"];
+export type ScoreAwardInput = components["schemas"]["ScoreAwardRequest"];
+
+export async function fetchPodium(): Promise<PodiumEntry[]> {
+  const eventId = await getCurrentEventId();
+  return unwrap(apiClient.GET("/staff/events/{eventId}/podium", { params: { path: { eventId } } }));
+}
+
+export async function awardScore(input: ScoreAwardInput) {
+  const eventId = await getCurrentEventId();
+  return unwrap(apiClient.POST("/staff/events/{eventId}/scores", { params: { path: { eventId } }, body: input }));
+}

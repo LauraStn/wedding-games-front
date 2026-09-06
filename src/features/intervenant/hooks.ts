@@ -5,6 +5,7 @@ import {
   acceptAnswer,
   activateQuestion,
   admitParticipant,
+  awardScore,
   closeLobby,
   closeQuestion,
   correctAnswer,
@@ -12,6 +13,7 @@ import {
   fetchFinalists,
   fetchGames,
   fetchLobbyParticipants,
+  fetchPodium,
   fetchQuestions,
   fetchTeams,
   hideAnswer,
@@ -135,5 +137,17 @@ export function useFinalists(questionId: string | undefined, revealVoteCount: bo
     queryKey: ["intervenant-finalists", questionId, revealVoteCount],
     queryFn: () => fetchFinalists(questionId as string, revealVoteCount),
     enabled: Boolean(questionId),
+  });
+}
+
+export function usePodium() {
+  return useQuery({ queryKey: ["intervenant-podium"], queryFn: fetchPodium });
+}
+
+export function useAwardScore() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: awardScore,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["intervenant-podium"] }),
   });
 }

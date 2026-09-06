@@ -6,6 +6,7 @@ import { ApiError } from "../../api/errors";
 import * as authApi from "../../features/auth/api";
 import * as lobbyApi from "../../features/lobby/api";
 import * as teamApi from "../../features/team/api";
+import * as whoSaidItApi from "../../features/whoSaidIt/api";
 
 const session = {
   actorType: "PARTICIPANT" as const,
@@ -30,6 +31,7 @@ function setOnline(value: boolean) {
 describe("ParticipantLobbyContent", () => {
   beforeEach(() => {
     vi.spyOn(teamApi, "fetchMyTeam").mockRejectedValue(new ApiError("not-found", "Équipe non formée."));
+    vi.spyOn(whoSaidItApi, "fetchMyQuestions").mockResolvedValue([]);
   });
   afterEach(() => setOnline(true));
 

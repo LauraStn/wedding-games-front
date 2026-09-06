@@ -19,8 +19,12 @@ tags:
     description: Gestion des participants (reserve a l'administrateur)
   - name: Jury - Finalistes
     description: Top 3 des reponses les plus votees (egalites incluses), transmis au jury
+  - name: Intervenant - Selection Who Said It
+    description: Tirage aleatoire d'une question acceptee pour le jeu
   - name: Admin - Personnages
     description: Catalogue de personnages (reserve a l'administrateur)
+  - name: Who Said It - Propositions
+    description: Proposition et modification de questions par les invites, tant que le salon reste ouvert
   - name: Admin - Exclusions
     description: Gestion des exclusions de matchmaking (reserve a l'administrateur)
   - name: Quiz
@@ -41,6 +45,8 @@ tags:
     description: Connexion des membres de l'organisation (mot de passe BCrypt)
   - name: Intervenant - Salon
     description: Pilotage du salon d'attente (ouverture, fermeture, arrivees)
+  - name: Intervenant - Moderation Who Said It
+    description: Acceptation, refus et correction des questions proposees par les invites
   - name: Salon
     description: Heartbeat de presence du participant dans le salon d'attente
   - name: Intervenant - Parties
@@ -59,17 +65,71 @@ tags:
     description: Gestion des comptes et roles de l'organisation
   - name: Invitations
     description: Resolution et confirmation d'une invitation par jeton opaque
+  - name: Intervenant - Scores
+    description: Attribution des points aux equipes et calcul du podium
   - name: Admin - Evenement
     description: Configuration de l'evenement (theme, textes, informations des maries)
   - name: Admin - Invitations
     description: Generation et regeneration des invitations (reserve a l'administrateur)
 paths:
+  /who-said-it/questions/{id}:
+    put:
+      tags:
+        - Who Said It - Propositions
+      summary: Modifie une de mes questions, tant que le salon reste ouvert
+      operationId: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhoSaidItQuestionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WhoSaidItQuestionResponse'
+  /staff/who-said-it/questions/{id}/content:
+    put:
+      tags:
+        - Intervenant - Moderation Who Said It
+      summary: Corrige le contenu (faute de frappe, texte illisible) sans changer le sens
+      operationId: correct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhoSaidItCorrectionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WhoSaidItQuestionResponse'
   /staff/answers/{answerId}/content:
     put:
       tags:
         - Intervenant - Moderation quiz
       summary: Corrige le contenu (faute de frappe, texte illisible) sans changer le sens
-      operationId: correct
+      operationId: correct_1
       parameters:
         - name: answerId
           in: path
@@ -157,7 +217,7 @@ paths:
     put:
       tags:
         - Admin - Comptes staff
-      operationId: update
+      operationId: update_1
       parameters:
         - name: id
           in: path
@@ -214,7 +274,7 @@ paths:
     put:
       tags:
         - Admin - Participants
-      operationId: update_1
+      operationId: update_2
       parameters:
         - name: id
           in: path
@@ -273,7 +333,7 @@ paths:
       tags:
         - Admin - Evenement
       summary: Met a jour la configuration d'un evenement donne (usage multi-evenements)
-      operationId: update_2
+      operationId: update_3
       parameters:
         - name: eventId
           in: path
@@ -347,7 +407,7 @@ paths:
     put:
       tags:
         - Admin - Personnages
-      operationId: update_3
+      operationId: update_4
       parameters:
         - name: id
           in: path
@@ -382,6 +442,25 @@ paths:
       responses:
         '200':
           description: OK
+  /who-said-it/questions:
+    post:
+      tags:
+        - Who Said It - Propositions
+      summary: Propose une nouvelle question (limite au nombre de questions par participant)
+      operationId: propose
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhoSaidItQuestionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WhoSaidItQuestionResponse'
   /vote/questions/{questionId}:
     post:
       tags:
@@ -408,6 +487,46 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/VoteResponse'
+  /staff/who-said-it/questions/{id}/reject:
+    post:
+      tags:
+        - Intervenant - Moderation Who Said It
+      summary: 'Refuse la question: jamais selectionnee pour le jeu'
+      operationId: reject
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WhoSaidItQuestionResponse'
+  /staff/who-said-it/questions/{id}/accept:
+    post:
+      tags:
+        - Intervenant - Moderation Who Said It
+      summary: 'Accepte la question: eligible a la selection aleatoire pour le jeu'
+      operationId: accept
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WhoSaidItQuestionResponse'
   /staff/questions/{questionId}/teams/{teamId}/relaunch:
     post:
       tags:
@@ -554,6 +673,77 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/GameResponse'
+  /staff/events/{eventId}/who-said-it/questions/select-random:
+    post:
+      tags:
+        - Intervenant - Selection Who Said It
+      summary: Tire au hasard une question acceptee et la fait passer a jouee
+      description: >-
+        Echoue explicitement (409) si aucune question acceptee n'est disponible. Le prenom de l'auteur n'est renvoye que
+        s'il a consenti a etre revele: c'est le moment ou ce consentement compte le plus, contrairement a la moderation
+        ou le staff voit toujours qui a propose quoi.
+      operationId: selectRandom
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/WhoSaidItQuestionResponse'
+  /staff/events/{eventId}/scores:
+    get:
+      tags:
+        - Intervenant - Scores
+      summary: Liste le journal des points attribues pour l'evenement
+      operationId: list
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScoreResponse'
+    post:
+      tags:
+        - Intervenant - Scores
+      summary: Attribue (ou retire) des points a une equipe; le bareme est fourni par l'appelant
+      operationId: award
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreAwardRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ScoreResponse'
   /staff/events/{eventId}/matchmaking/launch:
     post:
       tags:
@@ -851,7 +1041,7 @@ paths:
       tags:
         - Intervenant - Moderation quiz
       summary: 'Accepte la reponse: eligible a la projection, au vote et au jury'
-      operationId: accept
+      operationId: accept_1
       parameters:
         - name: answerId
           in: path
@@ -985,7 +1175,7 @@ paths:
     get:
       tags:
         - Admin - Comptes staff
-      operationId: list
+      operationId: list_1
       responses:
         '200':
           description: OK
@@ -1117,7 +1307,7 @@ paths:
     get:
       tags:
         - Admin - Questions
-      operationId: list_1
+      operationId: list_2
       parameters:
         - name: gameId
           in: path
@@ -1162,7 +1352,7 @@ paths:
     get:
       tags:
         - Admin - Participants
-      operationId: list_2
+      operationId: list_3
       parameters:
         - name: eventId
           in: path
@@ -1324,7 +1514,7 @@ paths:
     get:
       tags:
         - Admin - Parties
-      operationId: list_3
+      operationId: list_4
       parameters:
         - name: eventId
           in: path
@@ -1369,7 +1559,7 @@ paths:
     get:
       tags:
         - Admin - Exclusions
-      operationId: list_4
+      operationId: list_5
       parameters:
         - name: eventId
           in: path
@@ -1414,7 +1604,7 @@ paths:
     get:
       tags:
         - Admin - Personnages
-      operationId: list_5
+      operationId: list_6
       parameters:
         - name: eventId
           in: path
@@ -1600,6 +1790,21 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PairingExclusionResponse'
+  /who-said-it/questions/me:
+    get:
+      tags:
+        - Who Said It - Propositions
+      summary: Liste mes questions proposees
+      operationId: mine
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WhoSaidItQuestionResponse'
   /vote/questions/{questionId}/options:
     get:
       tags:
@@ -1694,7 +1899,7 @@ paths:
       tags:
         - Intervenant - Moderation quiz
       summary: Liste toutes les reponses d'une question pour moderation (y compris masquees)
-      operationId: list_6
+      operationId: list_7
       parameters:
         - name: questionId
           in: path
@@ -1736,7 +1941,7 @@ paths:
       tags:
         - Intervenant - Questions
       summary: Liste les questions d'une partie, pour que l'intervenant choisisse laquelle piloter
-      operationId: list_7
+      operationId: list_8
       parameters:
         - name: gameId
           in: path
@@ -1753,6 +1958,50 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/QuestionResponse'
+  /staff/events/{eventId}/who-said-it/questions:
+    get:
+      tags:
+        - Intervenant - Moderation Who Said It
+      summary: Liste toutes les questions proposees pour un evenement, pour moderation
+      operationId: list_9
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WhoSaidItQuestionResponse'
+  /staff/events/{eventId}/podium:
+    get:
+      tags:
+        - Intervenant - Scores
+      summary: Classement des equipes par total de points (egalites partagees, jamais de tirage au sort)
+      operationId: podium
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PodiumEntryResponse'
   /staff/events/{eventId}/matchmaking/teams:
     get:
       tags:
@@ -1829,7 +2078,7 @@ paths:
       tags:
         - Intervenant - Parties
       summary: Liste les parties d'un evenement, pour que l'intervenant choisisse laquelle piloter
-      operationId: list_8
+      operationId: list_10
       parameters:
         - name: eventId
           in: path
@@ -2091,6 +2340,56 @@ paths:
                 $ref: '#/components/schemas/PairingCheckResponse'
 components:
   schemas:
+    WhoSaidItQuestionRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+        revealAuthorConsent:
+          type: boolean
+      required:
+        - content
+    WhoSaidItQuestionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        authorDisplayName:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+            - PLAYED
+        revealAuthorConsent:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    WhoSaidItCorrectionRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+        - content
     AnswerCorrectionRequest:
       type: object
       properties:
@@ -2467,7 +2766,7 @@ components:
           type: string
           enum:
             - QUIZ
-            - LUI_OU_ELLE
+            - WHO_SAID_IT
             - BLIND_TEST
             - CUSTOM
         title:
@@ -2493,6 +2792,47 @@ components:
             - VOTE
             - JURY
             - RESULT
+    ScoreAwardRequest:
+      type: object
+      properties:
+        gameId:
+          type: string
+          format: uuid
+        teamId:
+          type: string
+          format: uuid
+        points:
+          type: integer
+          format: int32
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+        - teamId
+    ScoreResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
+        gameId:
+          type: string
+          format: uuid
+        teamId:
+          type: string
+          format: uuid
+        points:
+          type: integer
+          format: int32
+        reason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
     TeamMemberResponse:
       type: object
       properties:
@@ -2832,7 +3172,7 @@ components:
           type: string
           enum:
             - QUIZ
-            - LUI_OU_ELLE
+            - WHO_SAID_IT
             - BLIND_TEST
             - CUSTOM
         title:
@@ -2997,6 +3337,20 @@ components:
         voteCount:
           type: integer
           format: int64
+    PodiumEntryResponse:
+      type: object
+      properties:
+        teamId:
+          type: string
+          format: uuid
+        teamLabel:
+          type: string
+        totalPoints:
+          type: integer
+          format: int64
+        rank:
+          type: integer
+          format: int32
     LatecomerCandidateResponse:
       type: object
       properties:

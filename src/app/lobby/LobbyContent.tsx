@@ -3,6 +3,7 @@
 import { useSession } from "../../features/auth/useSession";
 import { useLobby } from "../../features/lobby/useLobby";
 import { TeamReveal } from "../../features/team/TeamReveal";
+import { WhoSaidItProposalForm } from "../../features/whoSaidIt/WhoSaidItProposalForm";
 import { LoadingScreen } from "../../components/LoadingScreen";
 import { ErrorPanel } from "../../components/ErrorPanel";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -77,6 +78,7 @@ export function ParticipantLobbyContent() {
       </div>
 
       <TeamReveal />
+      {lobby?.status === "OPEN" && <WhoSaidItProposalForm />}
     </div>
   );
 }

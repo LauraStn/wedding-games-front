@@ -12,6 +12,8 @@ import {
 import type { LobbyState } from "../../features/intervenant/api";
 import { MatchmakingPanel } from "../../features/intervenant/MatchmakingPanel";
 import { GamePilotPanel } from "../../features/intervenant/GamePilotPanel";
+import { ScorePanel } from "../../features/intervenant/ScorePanel";
+import { WhoSaidItPanel } from "../../features/whoSaidIt/WhoSaidItPanel";
 import { LoadingScreen } from "../../components/LoadingScreen";
 import { ErrorPanel } from "../../components/ErrorPanel";
 import { EmptyState } from "../../components/EmptyState";
@@ -141,6 +143,8 @@ function IntervenantContent() {
 
       <MatchmakingPanel />
       <GamePilotPanel />
+      <WhoSaidItPanel />
+      <ScorePanel />
     </div>
   );
 }

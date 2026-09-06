@@ -4,7 +4,24 @@
  */
 
 export interface paths {
-    "/staff/answers/{answerId}/content": {
+    "/who-said-it/questions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Modifie une de mes questions, tant que le salon reste ouvert */
+        put: operations["update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/who-said-it/questions/{id}/content": {
         parameters: {
             query?: never;
             header?: never;
@@ -14,6 +31,23 @@ export interface paths {
         get?: never;
         /** Corrige le contenu (faute de frappe, texte illisible) sans changer le sens */
         put: operations["correct"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/answers/{answerId}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Corrige le contenu (faute de frappe, texte illisible) sans changer le sens */
+        put: operations["correct_1"];
         post?: never;
         delete?: never;
         options?: never;
@@ -47,7 +81,7 @@ export interface paths {
             cookie?: never;
         };
         get: operations["get"];
-        put: operations["update"];
+        put: operations["update_1"];
         post?: never;
         delete: operations["delete"];
         options?: never;
@@ -63,7 +97,7 @@ export interface paths {
             cookie?: never;
         };
         get: operations["get_1"];
-        put: operations["update_1"];
+        put: operations["update_2"];
         post?: never;
         delete: operations["delete_1"];
         options?: never;
@@ -81,7 +115,7 @@ export interface paths {
         /** Configuration d'un evenement donne (usage multi-evenements) */
         get: operations["get_2"];
         /** Met a jour la configuration d'un evenement donne (usage multi-evenements) */
-        put: operations["update_2"];
+        put: operations["update_3"];
         post?: never;
         delete?: never;
         options?: never;
@@ -115,9 +149,26 @@ export interface paths {
             cookie?: never;
         };
         get: operations["get_3"];
-        put: operations["update_3"];
+        put: operations["update_4"];
         post?: never;
         delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/who-said-it/questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Propose une nouvelle question (limite au nombre de questions par participant) */
+        post: operations["propose"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -134,6 +185,40 @@ export interface paths {
         put?: never;
         /** Vote pour une reponse (jamais celle de sa propre equipe, une seule fois par question) */
         post: operations["vote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/who-said-it/questions/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refuse la question: jamais selectionnee pour le jeu */
+        post: operations["reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/who-said-it/questions/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accepte la question: eligible a la selection aleatoire pour le jeu */
+        post: operations["accept"];
         delete?: never;
         options?: never;
         head?: never;
@@ -253,6 +338,44 @@ export interface paths {
         put?: never;
         /** Passe a la question suivante (phase QUESTION), depuis PREPARATION ou RESULT */
         post: operations["nextQuestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/who-said-it/questions/select-random": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Tire au hasard une question acceptee et la fait passer a jouee
+         * @description Echoue explicitement (409) si aucune question acceptee n'est disponible. Le prenom de l'auteur n'est renvoye que s'il a consenti a etre revele: c'est le moment ou ce consentement compte le plus, contrairement a la moderation ou le staff voit toujours qui a propose quoi.
+         */
+        post: operations["selectRandom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/scores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liste le journal des points attribues pour l'evenement */
+        get: operations["list"];
+        put?: never;
+        /** Attribue (ou retire) des points a une equipe; le bareme est fourni par l'appelant */
+        post: operations["award"];
         delete?: never;
         options?: never;
         head?: never;
@@ -484,7 +607,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Accepte la reponse: eligible a la projection, au vote et au jury */
-        post: operations["accept"];
+        post: operations["accept_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -620,7 +743,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list"];
+        get: operations["list_1"];
         put?: never;
         post: operations["create"];
         delete?: never;
@@ -713,7 +836,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
         post: operations["create_1"];
         delete?: never;
@@ -729,7 +852,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
         post: operations["create_2"];
         delete?: never;
@@ -797,7 +920,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
         post: operations["create_3"];
         delete?: never;
@@ -813,7 +936,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_4"];
+        get: operations["list_5"];
         put?: never;
         post: operations["create_4"];
         delete?: never;
@@ -829,7 +952,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_5"];
+        get: operations["list_6"];
         put?: never;
         post: operations["create_5"];
         delete?: never;
@@ -918,6 +1041,23 @@ export interface paths {
         patch: operations["updateReason"];
         trace?: never;
     };
+    "/who-said-it/questions/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liste mes questions proposees */
+        get: operations["mine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/vote/questions/{questionId}/options": {
         parameters: {
             query?: never;
@@ -1000,7 +1140,7 @@ export interface paths {
             cookie?: never;
         };
         /** Liste toutes les reponses d'une question pour moderation (y compris masquees) */
-        get: operations["list_6"];
+        get: operations["list_7"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1034,7 +1174,41 @@ export interface paths {
             cookie?: never;
         };
         /** Liste les questions d'une partie, pour que l'intervenant choisisse laquelle piloter */
-        get: operations["list_7"];
+        get: operations["list_8"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/who-said-it/questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liste toutes les questions proposees pour un evenement, pour moderation */
+        get: operations["list_9"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff/events/{eventId}/podium": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Classement des equipes par total de points (egalites partagees, jamais de tirage au sort) */
+        get: operations["podium"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1101,7 +1275,7 @@ export interface paths {
             cookie?: never;
         };
         /** Liste les parties d'un evenement, pour que l'intervenant choisisse laquelle piloter */
-        get: operations["list_8"];
+        get: operations["list_10"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1295,6 +1469,30 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        WhoSaidItQuestionRequest: {
+            content: string;
+            revealAuthorConsent?: boolean;
+        };
+        WhoSaidItQuestionResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            eventId?: string;
+            /** Format: uuid */
+            authorId?: string;
+            authorDisplayName?: string;
+            content?: string;
+            /** @enum {string} */
+            status?: "PENDING" | "ACCEPTED" | "REJECTED" | "PLAYED";
+            revealAuthorConsent?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        WhoSaidItCorrectionRequest: {
+            content: string;
+        };
         AnswerCorrectionRequest: {
             content: string;
         };
@@ -1467,7 +1665,7 @@ export interface components {
             /** Format: uuid */
             eventId?: string;
             /** @enum {string} */
-            type?: "QUIZ" | "LUI_OU_ELLE" | "BLIND_TEST" | "CUSTOM";
+            type?: "QUIZ" | "WHO_SAID_IT" | "BLIND_TEST" | "CUSTOM";
             title?: string;
             /** Format: int32 */
             sequence?: number;
@@ -1475,6 +1673,30 @@ export interface components {
             status?: "DRAFT" | "READY" | "ACTIVE" | "PAUSED" | "FINISHED";
             /** @enum {string} */
             phase?: "LOBBY" | "PREPARATION" | "QUESTION" | "ANSWERS_CLOSED" | "VOTE" | "JURY" | "RESULT";
+        };
+        ScoreAwardRequest: {
+            /** Format: uuid */
+            gameId?: string;
+            /** Format: uuid */
+            teamId: string;
+            /** Format: int32 */
+            points?: number;
+            reason?: string;
+        };
+        ScoreResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            eventId?: string;
+            /** Format: uuid */
+            gameId?: string;
+            /** Format: uuid */
+            teamId?: string;
+            /** Format: int32 */
+            points?: number;
+            reason?: string;
+            /** Format: date-time */
+            createdAt?: string;
         };
         TeamMemberResponse: {
             /** Format: uuid */
@@ -1621,7 +1843,7 @@ export interface components {
         };
         GameCreateRequest: {
             /** @enum {string} */
-            type: "QUIZ" | "LUI_OU_ELLE" | "BLIND_TEST" | "CUSTOM";
+            type: "QUIZ" | "WHO_SAID_IT" | "BLIND_TEST" | "CUSTOM";
             title: string;
             /** Format: int32 */
             sequence?: number;
@@ -1699,6 +1921,15 @@ export interface components {
             /** Format: int64 */
             voteCount?: number;
         };
+        PodiumEntryResponse: {
+            /** Format: uuid */
+            teamId?: string;
+            teamLabel?: string;
+            /** Format: int64 */
+            totalPoints?: number;
+            /** Format: int32 */
+            rank?: number;
+        };
         LatecomerCandidateResponse: {
             /** Format: uuid */
             participantId?: string;
@@ -1753,7 +1984,59 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WhoSaidItQuestionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WhoSaidItQuestionResponse"];
+                };
+            };
+        };
+    };
     correct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WhoSaidItCorrectionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WhoSaidItQuestionResponse"];
+                };
+            };
+        };
+    };
+    correct_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1849,7 +2132,7 @@ export interface operations {
             };
         };
     };
-    update: {
+    update_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1917,7 +2200,7 @@ export interface operations {
             };
         };
     };
-    update_1: {
+    update_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1985,7 +2268,7 @@ export interface operations {
             };
         };
     };
-    update_2: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -2077,7 +2360,7 @@ export interface operations {
             };
         };
     };
-    update_3: {
+    update_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -2123,6 +2406,30 @@ export interface operations {
             };
         };
     };
+    propose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WhoSaidItQuestionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WhoSaidItQuestionResponse"];
+                };
+            };
+        };
+    };
     vote: {
         parameters: {
             query?: never;
@@ -2145,6 +2452,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["VoteResponse"];
+                };
+            };
+        };
+    };
+    reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WhoSaidItQuestionResponse"];
+                };
+            };
+        };
+    };
+    accept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WhoSaidItQuestionResponse"];
                 };
             };
         };
@@ -2300,6 +2651,76 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["GameResponse"];
+                };
+            };
+        };
+    };
+    selectRandom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WhoSaidItQuestionResponse"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ScoreResponse"][];
+                };
+            };
+        };
+    };
+    award: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScoreAwardRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ScoreResponse"];
                 };
             };
         };
@@ -2596,7 +3017,7 @@ export interface operations {
             };
         };
     };
-    accept: {
+    accept_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2766,7 +3187,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2918,7 +3339,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -2966,7 +3387,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: {
                 status?: "INVITED" | "CONFIRMED" | "CONNECTED" | "PAUSED" | "ABSENT" | "DISABLED";
@@ -3100,7 +3521,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -3148,7 +3569,7 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    list_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -3196,7 +3617,7 @@ export interface operations {
             };
         };
     };
-    list_5: {
+    list_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -3408,6 +3829,26 @@ export interface operations {
             };
         };
     };
+    mine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WhoSaidItQuestionResponse"][];
+                };
+            };
+        };
+    };
     options: {
         parameters: {
             query?: never;
@@ -3496,7 +3937,7 @@ export interface operations {
             };
         };
     };
-    list_6: {
+    list_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -3540,7 +3981,7 @@ export interface operations {
             };
         };
     };
-    list_7: {
+    list_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -3558,6 +3999,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["QuestionResponse"][];
+                };
+            };
+        };
+    };
+    list_9: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WhoSaidItQuestionResponse"][];
+                };
+            };
+        };
+    };
+    podium: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PodiumEntryResponse"][];
                 };
             };
         };
@@ -3629,7 +4114,7 @@ export interface operations {
             };
         };
     };
-    list_8: {
+    list_10: {
         parameters: {
             query?: never;
             header?: never;
